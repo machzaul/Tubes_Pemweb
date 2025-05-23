@@ -38,6 +38,13 @@ const Checkout = () => {
     }));
   };
 
+  // Generate unique order ID
+  const generateOrderId = () => {
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `${timestamp.substr(-8)}-${random}`;
+  };
+
   const handlePlaceOrder = (e) => {
     e.preventDefault();
     
@@ -47,15 +54,29 @@ const Checkout = () => {
       return;
     }
 
-    // Simulasi place order
+    // Generate unique order ID
+    const orderId = generateOrderId();
+
+    // Simulasi place order dengan status default 'pending'
     const orderData = {
+      orderId,
       customerInfo,
       items: cart,
       subtotal: calculateSubtotal(),
       shipping: shippingCost,
       total: totalCost,
       orderDate: new Date().toISOString(),
-      orderId: 'ORD-' + Date.now()
+      status: 'pending', // Status default untuk order baru
+      statusHistory: [
+        {
+          status: 'pending',
+          timestamp: new Date().toISOString(),
+          updatedBy: 'system',
+          note: 'Order placed by customer'
+        }
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     // Simpan order ke localStorage (simulasi)
@@ -66,8 +87,8 @@ const Checkout = () => {
     // Clear cart
     localStorage.removeItem("cart");
     
-    alert(`Order placed successfully! Order ID: ${orderData.orderId}`);
-    navigate("/");
+    alert(`Order placed successfully! Order ID: ${orderData.orderId}\nYou can track your order using this ID.`);
+    navigate("/orders"); // Redirect ke halaman tracking order
   };
 
   if (cart.length === 0) {
@@ -206,6 +227,15 @@ const Checkout = () => {
                 <span>Total</span>
                 <span className="text-purple-600">${totalCost}</span>
               </div>
+            </div>
+
+            {/* Order Status Info */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">Order Status Information</h3>
+              <p className="text-xs text-blue-700">
+                After placing your order, you will receive an Order ID that you can use to track your order status. 
+                Your order will initially be set to "Pending" and will be updated by our admin team as it progresses.
+              </p>
             </div>
           </div>
         </div>

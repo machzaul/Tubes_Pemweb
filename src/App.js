@@ -9,6 +9,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminOrder from "./pages/AdminOrders";
 import AddEditProduct from "./pages/AddEditProduct";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/adminorder" element={<AdminOrder />} />
         <Route path="/admin/add-product" element={<AddEditProduct />} />
         <Route path="/admin/edit-product/:id" element={<AddEditProduct />} />
       </Routes>
