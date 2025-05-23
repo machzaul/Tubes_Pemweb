@@ -47,7 +47,10 @@ const Navbar = () => {
           Contact
         </Link>
         <Link to="/orders" className="hover:text-purple-200 transition-colors">
-          Orders
+          Track Order
+        </Link>
+        <Link to="/admin" className="hover:text-purple-200 transition-colors">
+          Admin
         </Link>
         <Link to="/cart" className="relative hover:text-purple-200 transition-colors">
           <div className="flex items-center space-x-1">
