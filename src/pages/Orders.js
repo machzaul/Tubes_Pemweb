@@ -486,29 +486,6 @@ const OrderTracking = () => {
           </div>
         )}
 
-        {/* Sample Order IDs for testing */}
-        {!searchedOrder && !error && (
-          <div className="text-center text-gray-500 mt-8">
-            <p className="text-sm mb-2">Sample Order IDs for testing:</p>
-            <div className="space-y-1">
-              <p className="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">
-                81d25430-3192-4106-a231-7a12cb0214a7 (Confirmed)
-              </p>
-              <br />
-              <p className="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">
-                ORD-002 (Shipping)
-              </p>
-              <br />
-              <p className="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">
-                ORD-003 (Completed)
-              </p>
-              <br />
-              <p className="font-mono text-xs bg-gray-100 px-2 py-1 rounded inline-block">
-                ORD-004 (Cancelled)
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
