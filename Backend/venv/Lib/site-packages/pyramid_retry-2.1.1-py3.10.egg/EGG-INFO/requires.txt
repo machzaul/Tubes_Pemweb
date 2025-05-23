@@ -1,0 +1,12 @@
+pyramid>=1.9
+zope.interface
+
+[docs]
+Sphinx
+pylons-sphinx-themes
+repoze.sphinx.autointerface
+
+[testing]
+pytest
+pytest-cov
+WebTest
