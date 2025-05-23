@@ -13,7 +13,21 @@ const ProductDetail = () => {
 
   const addToCart = () => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    storedCart.push(product);
+    
+    // Cek apakah produk sudah ada di cart
+    const existingProductIndex = storedCart.findIndex(item => item.id === product.id);
+    
+    if (existingProductIndex !== -1) {
+      // Jika produk sudah ada, tambahkan quantity
+      storedCart[existingProductIndex].quantity = (storedCart[existingProductIndex].quantity || 1) + 1;
+    } else {
+      // Jika produk belum ada, tambahkan produk baru dengan quantity 1
+      storedCart.push({
+        ...product,
+        quantity: 1
+      });
+    }
+    
     localStorage.setItem("cart", JSON.stringify(storedCart));
     alert("Produk ditambahkan ke keranjang!");
   };
