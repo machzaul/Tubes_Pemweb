@@ -26,4 +26,5 @@ def options_view(request):
 def includeme(config):
     """Include CORS configuration"""
     config.add_subscriber(add_cors_headers_response_callback, 'pyramid.events.NewResponse')
+    config.add_route('cors_options', '/*path', request_method='OPTIONS')
     config.add_view(options_view, route_name='cors_options', request_method='OPTIONS')
