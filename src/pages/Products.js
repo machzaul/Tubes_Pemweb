@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -152,11 +151,11 @@ const Products = () => {
             {filteredProducts.map((product) => (
               <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 {/* Product Image */}
-                <div className="aspect-w-16 aspect-h-12 bg-gray-200">
+                <div className="bg-gray-200 overflow-hidden flex justify-center items-center p-4">
                   <img 
                     src={product.image} 
                     alt={product.title}
-                    className="w-full h-64 object-cover"
+                    className="w-40 h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-110"
                   />
                 </div>
                 
@@ -195,12 +194,6 @@ const Products = () => {
                     >
                       Add to Cart
                     </button>
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="flex-shrink-0 py-2 px-4 border border-purple-600 text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
-                    >
-                      View Details
-                    </Link>
                   </div>
                 </div>
               </div>
