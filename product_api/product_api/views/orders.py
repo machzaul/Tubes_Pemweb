@@ -1,5 +1,6 @@
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPOk
 import json
 import uuid
 from datetime import datetime
@@ -26,6 +27,7 @@ def get_order(request):
         return order.to_dict()
     except (ValueError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
 
 @view_config(route_name='orders', request_method='POST', renderer='json')
 def create_order(request):
@@ -185,6 +187,11 @@ def delete_order(request):
         
     except (ValueError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+
+@view_config(route_name='order', request_method='OPTIONS', renderer='json')
+def order_options(request):
+    return HTTPOk()
 
 # Additional endpoint to get order by order_id (custom ID)
 @view_config(route_name='order_by_order_id', request_method='GET', renderer='json')

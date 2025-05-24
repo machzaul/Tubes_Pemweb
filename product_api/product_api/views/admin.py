@@ -1,4 +1,5 @@
 from pyramid.response import Response
+from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 import json
 import jwt
@@ -53,6 +54,10 @@ def admin_login(request):
         
     except (ValueError, KeyError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+@view_config(route_name='admin_login', request_method='OPTIONS', renderer='json')
+def admin_login_options(request):
+    return HTTPOk()
 
 @view_config(route_name='admin_logout', request_method='POST', renderer='json')
 def admin_logout(request):
@@ -92,6 +97,10 @@ def create_admin(request):
         
     except (ValueError, KeyError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+@view_config(route_name='admin_create', request_method='OPTIONS', renderer='json')
+def admin_profile_options(request):
+    return HTTPOk()
 
 @view_config(route_name='admin_profile', request_method='GET', renderer='json')
 def get_admin_profile(request):
@@ -127,3 +136,7 @@ def get_admin_profile(request):
         
     except Exception as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+@view_config(route_name='admin_profile', request_method='OPTIONS', renderer='json')
+def admin_profile_options(request):
+    return HTTPOk()
