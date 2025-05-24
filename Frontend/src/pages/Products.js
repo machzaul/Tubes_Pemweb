@@ -4,94 +4,53 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:6543';
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/products`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setProducts(data.products || []);
+      localStorage.setItem("adminProducts", JSON.stringify(data.products || []));
+    } catch (err) {
+      console.error("Failed to fetch products from backend:", err);
+      // fallback to local storage or sample data
+      const storedProducts = JSON.parse(localStorage.getItem("adminProducts")) || [];
+      if (storedProducts.length > 0) {
+        setProducts(storedProducts);
+      } else {
+        const sampleProducts = [/*...sample data...*/]; // salin dari kode awal
+        setProducts(sampleProducts);
+        localStorage.setItem("adminProducts", JSON.stringify(sampleProducts));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Load products from localStorage (admin products)
-    const storedProducts = JSON.parse(localStorage.getItem("adminProducts")) || [];
-    
-    // If no products in localStorage, use sample data (same as admin dashboard)
-    if (storedProducts.length === 0) {
-      const sampleProducts = [
-        {
-          id: 1,
-          title: "Stylish Headphones",
-          description: "Premium wireless headphones with noise cancellation.",
-          price: 249.99,
-          stock: 15,
-          image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop"
-        },
-        {
-          id: 2,
-          title: "Smart Watch",
-          description: "Track your fitness and receive notifications on the go.",
-          price: 199.99,
-          stock: 10,
-          image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop"
-        },
-        {
-          id: 3,
-          title: "Minimalist Desk Lamp",
-          description: "Modern desk lamp with adjustable brightness.",
-          price: 59.99,
-          stock: 25,
-          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop"
-        },
-        {
-          id: 4,
-          title: "Organic Coffee Beans",
-          description: "Ethically sourced premium coffee beans.",
-          price: 19.99,
-          stock: 30,
-          image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=500&h=500&fit=crop"
-        },
-        {
-          id: 5,
-          title: "Leather Wallet",
-          description: "Handcrafted genuine leather wallet with RFID protection.",
-          price: 45.99,
-          stock: 18,
-          image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=500&h=500&fit=crop"
-        },
-        {
-          id: 6,
-          title: "Ceramic Plant Pot",
-          description: "Minimalist design perfect for succulents and small plants.",
-          price: 24.99,
-          stock: 22,
-          image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=500&h=500&fit=crop"
-        }
-      ];
-      setProducts(sampleProducts);
-      localStorage.setItem("adminProducts", JSON.stringify(sampleProducts));
-    } else {
-      setProducts(storedProducts);
-    }
-    setLoading(false);
+    fetchProducts();
   }, []);
 
   const addToCart = (product) => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    
-    // Check if product already exists in cart
-    const existingProductIndex = storedCart.findIndex(item => item.id === product.id);
-    
-    if (existingProductIndex !== -1) {
-      // If product exists, increase quantity
-      storedCart[existingProductIndex].quantity = (storedCart[existingProductIndex].quantity || 1) + 1;
+    const existingIndex = storedCart.findIndex(item => item.id === product.id);
+
+    if (existingIndex !== -1) {
+      storedCart[existingIndex].quantity = (storedCart[existingIndex].quantity || 1) + 1;
     } else {
-      // If product doesn't exist, add new product with quantity 1
-      storedCart.push({
-        ...product,
-        quantity: 1
-      });
+      storedCart.push({ ...product, quantity: 1 });
     }
-    
+
     localStorage.setItem("cart", JSON.stringify(storedCart));
     window.dispatchEvent(new Event('cartUpdated'));
     alert("Product added to cart!");
   };
 
-  // Filter products based on search term
   const filteredProducts = products.filter(product =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description.toLowerCase().includes(searchTerm.toLowerCase())

@@ -13,6 +13,7 @@ def includeme(config):
     # Order routes
     config.add_route('orders', '/api/orders')
     config.add_route('order', '/api/orders/{id}')
+    config.add_route('order_by_order_id', '/api/orders/order-id/{order_id}')  # New route
     config.add_route('order_status', '/api/orders/{id}/status')
     
     # Admin routes

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const [cart, setCart] = useState([]);
-  const [products, setProducts] = useState([]); // Admin products for stock validation
+  const [products, setProducts] = useState([]); // Products from backend
   const [stockErrors, setStockErrors] = useState([]); // Track stock validation errors
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
@@ -11,45 +11,64 @@ const Checkout = () => {
     address: "",
     phoneNumber: ""
   });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const API_BASE_URL = 'http://localhost:6543/api'; // Adjust to your backend URL
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const storedProducts = JSON.parse(localStorage.getItem("adminProducts")) || [];
-    
     setCart(storedCart);
-    setProducts(storedProducts);
 
-    // Redirect jika cart kosong
+    // Redirect if cart is empty
     if (storedCart.length === 0) {
       alert("Your cart is empty. Please add some products first.");
       navigate("/products");
       return;
     }
 
-    // Validate stock availability for cart items
-    validateCartStock(storedCart, storedProducts);
+    // Fetch products from backend
+    fetchProducts();
   }, [navigate]);
 
+  // Fetch products from backend
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      setProducts(data.products);
+      
+      // Validate cart stock after fetching products
+      const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      validateCartStock(storedCart, data.products);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      alert('Error fetching product information. Please try again.');
+    }
+  };
+
   // Validate cart items against available stock
-  const validateCartStock = (cartItems, adminProducts) => {
+  const validateCartStock = (cartItems, backendProducts) => {
     const errors = [];
     
     cartItems.forEach(cartItem => {
-      const adminProduct = adminProducts.find(p => p.id === cartItem.id);
-      if (!adminProduct) {
+      const backendProduct = backendProducts.find(p => p.id === cartItem.id);
+      if (!backendProduct) {
         errors.push({
           id: cartItem.id,
           title: cartItem.title,
           message: "Product is no longer available"
         });
-      } else if (cartItem.quantity > adminProduct.stock) {
+      } else if (cartItem.quantity > backendProduct.stock) {
         errors.push({
           id: cartItem.id,
           title: cartItem.title,
           requestedQty: cartItem.quantity,
-          availableStock: adminProduct.stock,
-          message: `Only ${adminProduct.stock} items available (you have ${cartItem.quantity} in cart)`
+          availableStock: backendProduct.stock,
+          message: `Only ${backendProduct.stock} items available (you have ${cartItem.quantity} in cart)`
         });
       }
     });
@@ -60,18 +79,18 @@ const Checkout = () => {
   // Fix cart quantities to match available stock
   const fixCartQuantities = () => {
     const updatedCart = cart.map(cartItem => {
-      const adminProduct = products.find(p => p.id === cartItem.id);
-      if (adminProduct && cartItem.quantity > adminProduct.stock) {
+      const backendProduct = products.find(p => p.id === cartItem.id);
+      if (backendProduct && cartItem.quantity > backendProduct.stock) {
         return {
           ...cartItem,
-          quantity: adminProduct.stock
+          quantity: backendProduct.stock
         };
       }
       return cartItem;
     }).filter(cartItem => {
       // Remove items that are no longer available
-      const adminProduct = products.find(p => p.id === cartItem.id);
-      return adminProduct && adminProduct.stock > 0;
+      const backendProduct = products.find(p => p.id === cartItem.id);
+      return backendProduct && backendProduct.stock > 0;
     });
 
     setCart(updatedCart);
@@ -88,15 +107,15 @@ const Checkout = () => {
 
   // Update cart item quantity with stock validation
   const updateCartQuantity = (productId, newQuantity) => {
-    const adminProduct = products.find(p => p.id === productId);
+    const backendProduct = products.find(p => p.id === productId);
     
-    if (!adminProduct) {
+    if (!backendProduct) {
       alert("This product is no longer available.");
       return;
     }
     
-    if (newQuantity > adminProduct.stock) {
-      alert(`Sorry, only ${adminProduct.stock} items are available in stock.`);
+    if (newQuantity > backendProduct.stock) {
+      alert(`Sorry, only ${backendProduct.stock} items are available in stock.`);
       return;
     }
     
@@ -118,7 +137,7 @@ const Checkout = () => {
     validateCartStock(updatedCart, products);
   };
 
-  // Hitung subtotal dan total
+  // Calculate subtotal and total
   const calculateSubtotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
   };
@@ -141,7 +160,53 @@ const Checkout = () => {
     return `${timestamp.substr(-8)}-${random}`;
   };
 
-  const handlePlaceOrder = (e) => {
+  // Update product stock in backend
+  const updateProductStock = async (productId, newStock) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stock: newStock
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update product stock');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating product stock:', error);
+      throw error;
+    }
+  };
+
+  // Create order in backend
+  const createOrder = async (orderData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  };
+
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     
     // Check if there are any stock errors
@@ -150,77 +215,95 @@ const Checkout = () => {
       return;
     }
     
-    // Validasi form
+    // Validate form
     if (!customerInfo.fullName || !customerInfo.email || !customerInfo.address || !customerInfo.phoneNumber) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    // Final stock validation before placing order
-    const finalValidation = [];
-    cart.forEach(cartItem => {
-      const adminProduct = products.find(p => p.id === cartItem.id);
-      if (!adminProduct || cartItem.quantity > adminProduct.stock) {
-        finalValidation.push(cartItem.title);
+    setLoading(true);
+
+    try {
+      // Final stock validation before placing order
+      const response = await fetch(`${API_BASE_URL}/products`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch current stock');
       }
-    });
-
-    if (finalValidation.length > 0) {
-      alert(`Stock has changed for: ${finalValidation.join(', ')}. Please refresh and try again.`);
-      window.location.reload();
-      return;
-    }
-
-    // Generate unique order ID
-    const orderId = generateOrderId();
-
-    // Simulasi place order dengan status default 'pending'
-    const orderData = {
-      orderId,
-      customerInfo,
-      items: cart,
-      subtotal: calculateSubtotal(),
-      shipping: shippingCost,
-      total: totalCost,
-      orderDate: new Date().toISOString(),
-      status: 'pending',
-      statusHistory: [
-        {
-          status: 'pending',
-          timestamp: new Date().toISOString(),
-          updatedBy: 'system',
-          note: 'Order placed by customer'
+      const { products: currentProducts } = await response.json();
+      
+      const finalValidation = [];
+      cart.forEach(cartItem => {
+        const currentProduct = currentProducts.find(p => p.id === cartItem.id);
+        if (!currentProduct || cartItem.quantity > currentProduct.stock) {
+          finalValidation.push(cartItem.title);
         }
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      });
 
-    // Update product stock after successful order
-    const updatedProducts = products.map(product => {
-      const cartItem = cart.find(item => item.id === product.id);
-      if (cartItem) {
-        return {
-          ...product,
-          stock: product.stock - cartItem.quantity
-        };
+      if (finalValidation.length > 0) {
+        alert(`Stock has changed for: ${finalValidation.join(', ')}. Please refresh and try again.`);
+        window.location.reload();
+        return;
       }
-      return product;
-    });
 
-    // Save updated products back to localStorage
-    localStorage.setItem("adminProducts", JSON.stringify(updatedProducts));
+      // Generate unique order ID
+      const orderId = generateOrderId();
 
-    // Simpan order ke localStorage (simulasi)
-    const existingOrders = JSON.parse(localStorage.getItem("orders")) || [];
-    existingOrders.push(orderData);
-    localStorage.setItem("orders", JSON.stringify(existingOrders));
+      // Prepare order data for backend
+      const orderData = {
+        orderId: orderId,
+        customerInfo: {
+          fullName: customerInfo.fullName,
+          email: customerInfo.email,
+          address: customerInfo.address,
+          phoneNumber: customerInfo.phoneNumber
+        },
+        items: cart.map(item => ({
+          id: item.id,
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        subtotal: parseFloat(calculateSubtotal()),
+        shipping: shippingCost,
+        total: parseFloat(totalCost),
+        status: 'pending',
+        statusHistory: [
+          {
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            updatedBy: 'system',
+            note: 'Order placed by customer'
+          }
+        ]
+      };
 
-    // Clear cart
-    localStorage.removeItem("cart");
-    
-    alert(`Order placed successfully! Order ID: ${orderData.orderId}\nYou can track your order using this ID.`);
-    navigate("/orders");
+      // Create order in backend
+      const createdOrder = await createOrder(orderData);
+
+      // Update product stock for each item in the cart
+      const stockUpdatePromises = cart.map(async (cartItem) => {
+        const currentProduct = currentProducts.find(p => p.id === cartItem.id);
+        if (currentProduct) {
+          const newStock = currentProduct.stock - cartItem.quantity;
+          return updateProductStock(cartItem.id, newStock);
+        }
+      });
+
+      // Wait for all stock updates to complete
+      await Promise.all(stockUpdatePromises);
+
+      // Clear cart from localStorage
+      localStorage.removeItem("cart");
+      
+      alert(`Order placed successfully! Order ID: ${createdOrder.orderId || orderId}\nYou can track your order using this ID.`);
+      navigate("/orders");
+
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (cart.length === 0) {
@@ -331,14 +414,15 @@ const Checkout = () => {
               
               <button
                 type="submit"
-                disabled={stockErrors.length > 0}
+                disabled={stockErrors.length > 0 || loading}
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors shadow-lg ${
-                  stockErrors.length > 0
+                  stockErrors.length > 0 || loading
                     ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
                     : 'bg-purple-500 text-white hover:bg-purple-600'
                 }`}
               >
-                {stockErrors.length > 0 ? 'Resolve Stock Issues First' : 'Place Order'}
+                {loading ? 'Processing Order...' : 
+                 stockErrors.length > 0 ? 'Resolve Stock Issues First' : 'Place Order'}
               </button>
             </form>
           </div>
@@ -350,7 +434,7 @@ const Checkout = () => {
             {/* Cart Items */}
             <div className="space-y-4 mb-6">
               {cart.map((item, index) => {
-                const adminProduct = products.find(p => p.id === item.id);
+                const backendProduct = products.find(p => p.id === item.id);
                 const hasStockError = stockErrors.some(error => error.id === item.id);
                 
                 return (
@@ -384,9 +468,9 @@ const Checkout = () => {
                             +
                           </button>
                         </div>
-                        {adminProduct && (
+                        {backendProduct && (
                           <p className="text-xs text-gray-500 mt-1">
-                            Stock available: {adminProduct.stock}
+                            Stock available: {backendProduct.stock}
                           </p>
                         )}
                       </div>

@@ -16,24 +16,52 @@ const AddEditProduct = () => {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [fetchingProduct, setFetchingProduct] = useState(false);
+
+  // Backend API base URL - adjust this according to your backend configuration
+  const API_BASE_URL = "http://localhost:6543/api";
 
   useEffect(() => {
     if (isEdit) {
-      const products = JSON.parse(localStorage.getItem("adminProducts")) || [];
-      const product = products.find(p => p.id === parseInt(id));
-      if (product) {
-        setFormData({
-          title: product.title,
-          description: product.description,
-          price: product.price.toString(),
-          stock: product.stock.toString(),
-          image: product.image
-        });
-      } else {
-        navigate("/admin");
-      }
+      fetchProduct();
     }
-  }, [id, isEdit, navigate]);
+  }, [id, isEdit]);
+
+  const fetchProduct = async () => {
+    setFetchingProduct(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          alert("Product not found");
+          navigate("/adminDashboard");
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const product = await response.json();
+      setFormData({
+        title: product.title || "",
+        description: product.description || "",
+        price: product.price ? product.price.toString() : "",
+        stock: product.stock ? product.stock.toString() : "",
+        image: product.image || ""
+      });
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      alert("Error loading product data. Please try again.");
+      navigate("/adminDashboard");
+    } finally {
+      setFetchingProduct(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -93,7 +121,7 @@ const AddEditProduct = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -102,8 +130,6 @@ const AddEditProduct = () => {
 
     setLoading(true);
 
-    const products = JSON.parse(localStorage.getItem("adminProducts")) || [];
-    
     const productData = {
       title: formData.title.trim(),
       description: formData.description.trim(),
@@ -112,29 +138,80 @@ const AddEditProduct = () => {
       image: formData.image.trim()
     };
 
-    if (isEdit) {
-      // Update existing product
-      const updatedProducts = products.map(product => 
-        product.id === parseInt(id) 
-          ? { ...product, ...productData }
-          : product
-      );
-      localStorage.setItem("adminProducts", JSON.stringify(updatedProducts));
-    } else {
-      // Add new product
-      const newProduct = {
-        id: Date.now(), // Simple ID generation
-        ...productData
-      };
-      products.push(newProduct);
-      localStorage.setItem("adminProducts", JSON.stringify(products));
-    }
+    console.log('Submitting product data:', productData);
+    console.log('API URL:', isEdit ? `${API_BASE_URL}/products/${id}` : `${API_BASE_URL}/products`);
 
-    setTimeout(() => {
+    try {
+      let response;
+      
+      const requestOptions = {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(productData),
+      };
+
+      console.log('Request options:', requestOptions);
+      
+      if (isEdit) {
+        // Update existing product
+        response = await fetch(`${API_BASE_URL}/products/${id}`, requestOptions);
+      } else {
+        // Create new product
+        response = await fetch(`${API_BASE_URL}/products`, requestOptions);
+      }
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (jsonError) {
+          console.error('Error parsing error response:', jsonError);
+          const errorText = await response.text();
+          console.error('Error response text:', errorText);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      console.log('Product saved successfully:', result);
+      
+      // Show success message
+      alert(isEdit ? "Product updated successfully!" : "Product created successfully!");
+      
+      // Navigate back to admin dashboard
+      navigate("/adminDashboard");
+      
+    } catch (error) {
+      console.error("Error saving product:", error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      alert(`Error ${isEdit ? 'updating' : 'creating'} product: ${error.message}`);
+    } finally {
       setLoading(false);
-      navigate("/admin");
-    }, 500);
+    }
   };
+
+  // Show loading spinner while fetching product data
+  if (fetchingProduct) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-purple-600 border-solid border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -142,7 +219,7 @@ const AddEditProduct = () => {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate("/adminDashboard")}
             className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,6 +250,7 @@ const AddEditProduct = () => {
                   errors.title ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="Enter product title"
+                disabled={loading}
               />
               {errors.title && (
                 <p className="mt-1 text-sm text-red-600">{errors.title}</p>
@@ -194,6 +272,7 @@ const AddEditProduct = () => {
                   errors.description ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="Enter product description"
+                disabled={loading}
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600">{errors.description}</p>
@@ -218,6 +297,7 @@ const AddEditProduct = () => {
                     errors.price ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="0.00"
+                  disabled={loading}
                 />
                 {errors.price && (
                   <p className="mt-1 text-sm text-red-600">{errors.price}</p>
@@ -239,6 +319,7 @@ const AddEditProduct = () => {
                     errors.stock ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="0"
+                  disabled={loading}
                 />
                 {errors.stock && (
                   <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
@@ -261,6 +342,7 @@ const AddEditProduct = () => {
                   errors.image ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
                 placeholder="https://example.com/image.jpg"
+                disabled={loading}
               />
               {errors.image && (
                 <p className="mt-1 text-sm text-red-600">{errors.image}</p>
@@ -288,7 +370,7 @@ const AddEditProduct = () => {
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => navigate("/admin")}
+                onClick={() => navigate("/adminDashboard")}
                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 disabled={loading}
               >

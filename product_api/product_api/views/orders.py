@@ -29,12 +29,27 @@ def get_order(request):
 
 @view_config(route_name='orders', request_method='POST', renderer='json')
 def create_order(request):
-    """Create new order"""
+    """Create new order with stock validation and deduction"""
     try:
         data = request.json_body
         
-        # Generate unique order ID
-        order_id = f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        # Use provided order ID or generate one
+        order_id = data.get('orderId') or f"ORD-{uuid.uuid4().hex[:8].upper()}"
+        
+        # Validate stock before creating order
+        items = data.get('items', [])
+        stock_errors = []
+        
+        for item_data in items:
+            product = request.dbsession.query(Product).filter(Product.id == item_data.get('id')).first()
+            if not product:
+                stock_errors.append(f'Product with id {item_data.get("id")} not found')
+            elif product.stock < item_data.get('quantity', 0):
+                stock_errors.append(f'Insufficient stock for {product.title}. Available: {product.stock}, Requested: {item_data.get("quantity")}')
+        
+        if stock_errors:
+            return Response(json.dumps({'error': 'Stock validation failed', 'details': stock_errors}), 
+                          status=400, content_type='application/json; charset=UTF-8')
         
         # Create or get customer info
         customer_data = data.get('customerInfo', {})
@@ -44,6 +59,12 @@ def create_order(request):
             address=customer_data.get('address'),
             phone_number=customer_data.get('phoneNumber')
         )
+        
+        # Validate customer info
+        if not all([customer.full_name, customer.email, customer.address, customer.phone_number]):
+            return Response(json.dumps({'error': 'All customer information fields are required'}), 
+                          status=400, content_type='application/json; charset=UTF-8')
+        
         request.dbsession.add(customer)
         request.dbsession.flush()  # Get customer ID
         
@@ -61,15 +82,17 @@ def create_order(request):
         request.dbsession.add(order)
         request.dbsession.flush()  # Get order ID
         
-        # Create order items
-        items = data.get('items', [])
+        # Create order items and update stock
         for item_data in items:
             # Get product to ensure it exists and get current price
             product = request.dbsession.query(Product).filter(Product.id == item_data.get('id')).first()
-            if not product:
-                return Response(json.dumps({'error': f'Product with id {item_data.get("id")} not found'}), 
+            
+            # Double-check stock (race condition protection)
+            if product.stock < item_data.get('quantity', 0):
+                return Response(json.dumps({'error': f'Stock changed for {product.title}. Please refresh and try again.'}), 
                               status=400, content_type='application/json; charset=UTF-8')
             
+            # Create order item
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=product.id,
@@ -77,12 +100,26 @@ def create_order(request):
                 price=product.price  # Use current product price
             )
             request.dbsession.add(order_item)
+            
+            # Update product stock
+            product.stock -= item_data.get('quantity', 1)
+            
+            # Ensure stock doesn't go negative
+            if product.stock < 0:
+                product.stock = 0
         
         request.dbsession.flush()
         return order.to_dict()
         
     except (ValueError, KeyError, SQLAlchemyError) as e:
+        request.dbsession.rollback()
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+@view_config(route_name='orders', request_method='OPTIONS', renderer='json')
+def orders_options(request):
+    from pyramid.httpexceptions import HTTPOk
+    return HTTPOk()
+
 
 @view_config(route_name='order_status', request_method='PUT', renderer='json')
 def update_order_status(request):
@@ -120,17 +157,49 @@ def update_order_status(request):
         
     except (ValueError, KeyError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+
+@view_config(route_name='order_status', request_method='OPTIONS', renderer='json')
+def order_status_options(request):
+    from pyramid.httpexceptions import HTTPOk
+    return HTTPOk()
+
 
 @view_config(route_name='order', request_method='DELETE', renderer='json')
 def delete_order(request):
-    """Delete order"""
+    """Delete order and restore stock"""
     try:
         order_id = int(request.matchdict['id'])
         order = request.dbsession.query(Order).filter(Order.id == order_id).first()
         if not order:
             return Response(json.dumps({'error': 'Order not found'}), status=404, content_type='application/json; charset=UTF-8')
         
+        # Restore stock for each order item before deleting
+        for order_item in order.order_items:
+            product = order_item.product
+            if product:
+                product.stock += order_item.quantity
+        
         request.dbsession.delete(order)
-        return {'message': 'Order deleted successfully'}
+        return {'message': 'Order deleted successfully and stock restored'}
+        
     except (ValueError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+
+# Additional endpoint to get order by order_id (custom ID)
+@view_config(route_name='order_by_order_id', request_method='GET', renderer='json')
+def get_order_by_order_id(request):
+    """Get order by custom order_id"""
+    try:
+        order_id = request.matchdict['order_id']
+        order = request.dbsession.query(Order).filter(Order.order_id == order_id).first()
+        if not order:
+            return Response(json.dumps({'error': 'Order not found'}), status=404, content_type='application/json; charset=UTF-8')
+        return order.to_dict()
+    except SQLAlchemyError as e:
+        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+    
+@view_config(route_name='order_by_order_id', request_method='OPTIONS', renderer='json')
+def order_by_order_id_options(request):
+    from pyramid.httpexceptions import HTTPOk
+    return HTTPOk()
