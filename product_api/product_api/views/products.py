@@ -11,7 +11,7 @@ def get_products(request):
         products = request.dbsession.query(Product).all()
         return {'products': [product.to_dict() for product in products]}
     except SQLAlchemyError as e:
-        return Response(json.dumps({'error': str(e)}), status=500, content_type='application/json')
+        return Response(json.dumps({'error': str(e)}), status=500, content_type='application/json; charset=UTF-8')
 
 @view_config(route_name='product', request_method='GET', renderer='json')
 def get_product(request):
@@ -20,10 +20,10 @@ def get_product(request):
         product_id = int(request.matchdict['id'])
         product = request.dbsession.query(Product).filter(Product.id == product_id).first()
         if not product:
-            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json')
+            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json; charset=UTF-8')
         return product.to_dict()
     except (ValueError, SQLAlchemyError) as e:
-        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json')
+        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
 
 @view_config(route_name='products', request_method='POST', renderer='json')
 def create_product(request):
@@ -41,7 +41,7 @@ def create_product(request):
         request.dbsession.flush()  # Flush to get the ID
         return product.to_dict()
     except (ValueError, KeyError, SQLAlchemyError) as e:
-        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json')
+        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
 
 @view_config(route_name='product', request_method='PUT', renderer='json')
 def update_product(request):
@@ -50,7 +50,7 @@ def update_product(request):
         product_id = int(request.matchdict['id'])
         product = request.dbsession.query(Product).filter(Product.id == product_id).first()
         if not product:
-            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json')
+            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json; charset=UTF-8')
         
         data = request.json_body
         product.title = data.get('title', product.title)
@@ -61,7 +61,7 @@ def update_product(request):
         
         return product.to_dict()
     except (ValueError, KeyError, SQLAlchemyError) as e:
-        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json')
+        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
 
 @view_config(route_name='product', request_method='DELETE', renderer='json')
 def delete_product(request):
@@ -70,9 +70,9 @@ def delete_product(request):
         product_id = int(request.matchdict['id'])
         product = request.dbsession.query(Product).filter(Product.id == product_id).first()
         if not product:
-            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json')
+            return Response(json.dumps({'error': 'Product not found'}), status=404, content_type='application/json; charset=UTF-8')
         
         request.dbsession.delete(product)
         return {'message': 'Product deleted successfully'}
     except (ValueError, SQLAlchemyError) as e:
-        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json')
+        return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
