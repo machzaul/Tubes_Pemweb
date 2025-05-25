@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useAlert from "../hooks/useAlert"; // Sesuaikan path
 import AlertContainer from "../components/ui/AlertContainer"; // Sesuaikan path
+import ProductModal from "../components/ProductModal"; // Import modal baru
 import Rupiah from "../components/Rupiah";
 import PropTypes from "prop-types";
 
@@ -8,6 +9,8 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:6543';
   
   // Gunakan alert hook
@@ -81,6 +84,16 @@ const Products = () => {
     );
   };
 
+  const openProductModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeProductModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
   const filteredProducts = products.filter(product =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -140,8 +153,11 @@ const Products = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProducts.map((product) => (
               <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                {/* Product Image */}
-                <div className="bg-gray-200 overflow-hidden flex justify-center items-center p-0">
+                {/* Product Image - Clickable untuk membuka modal */}
+                <div 
+                  className="bg-gray-200 overflow-hidden flex justify-center items-center p-0 cursor-pointer"
+                  onClick={() => openProductModal(product)}
+                >
                   <img 
                     src={product.image} 
                     alt={product.title}
@@ -151,7 +167,10 @@ const Products = () => {
                 
                 {/* Product Info */}
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <h3 
+                    className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-purple-600 transition-colors"
+                    onClick={() => openProductModal(product)}
+                  >
                     {product.title}
                   </h3>
                   <p className="text-gray-600 text-sm mb-4">
@@ -173,7 +192,6 @@ const Products = () => {
                     </span>
                   </div>
 
-                  
                   {/* Action Buttons */}
                   <div className="flex space-x-3">
                     <button
@@ -187,6 +205,12 @@ const Products = () => {
                     >
                       Add to Cart
                     </button>
+                    <button
+                      onClick={() => openProductModal(product)}
+                      className="px-4 py-2 border border-purple-600 text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
+                    >
+                      Details
+                    </button>
                   </div>
                 </div>
               </div>
@@ -194,6 +218,13 @@ const Products = () => {
           </div>
         )}
       </div>
+
+      {/* Product Modal */}
+      <ProductModal 
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={closeProductModal}
+      />
 
       {/* Alert Container */}
       <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
