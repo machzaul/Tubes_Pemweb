@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Rupiah from "../components/Rupiah";
 
 const Checkout = () => {
   const [cart, setCart] = useState([]);
@@ -139,11 +140,11 @@ const Checkout = () => {
 
   // Calculate subtotal and total
   const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(0);
   };
 
   const shippingCost = 0;
-  const totalCost = (parseFloat(calculateSubtotal()) + shippingCost).toFixed(2);
+  const totalCost = (parseFloat(calculateSubtotal()) + shippingCost).toFixed(0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -477,7 +478,7 @@ const Checkout = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-gray-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        <Rupiah value={(item.price * item.quantity).toFixed(0)}/>
                       </p>
                       {hasStockError && (
                         <p className="text-xs text-red-600 mt-1">Stock issue</p>
@@ -492,7 +493,7 @@ const Checkout = () => {
             <div className="space-y-3 border-t border-gray-200 pt-4">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span className="font-semibold">${calculateSubtotal()}</span>
+                <span className="font-semibold"><Rupiah value={calculateSubtotal()}/></span>
               </div>
               
               <div className="flex justify-between text-sm text-gray-600">
@@ -502,7 +503,7 @@ const Checkout = () => {
               
               <div className="flex justify-between text-lg font-bold text-gray-900 border-t border-gray-200 pt-3">
                 <span>Total</span>
-                <span className="text-purple-600">${totalCost}</span>
+                <span className="text-purple-600"><Rupiah value={totalCost}/></span>
               </div>
             </div>
 

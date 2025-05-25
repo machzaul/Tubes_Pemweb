@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import useAlert from "../hooks/useAlert"; // Sesuaikan path
 import AlertContainer from "../components/ui/AlertContainer"; // Sesuaikan path
+import Rupiah from "../components/Rupiah";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,22 @@ const Products = () => {
   
   // Gunakan alert hook
   const { alerts, showSuccess, showError, removeAlert } = useAlert();
+
+  const formatRupiah = (angka, prefix = "Rp") => {
+    if (!angka) return prefix + "0";
+    let number_string = angka.toString().replace(/[^,\d]/g, ""),
+      split = number_string.split(","),
+      sisa = split[0].length % 3,
+      rupiah = split[0].substr(0, sisa),
+      ribuan = split[0].substr(sisa).match(/\d{3}/g);
+
+    if (ribuan) {
+      rupiah += (sisa ? "." : "") + ribuan.join(".");
+    }
+
+    rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+    return prefix + rupiah;
+  };
 
   const fetchProducts = async () => {
     try {
@@ -140,18 +157,19 @@ const Products = () => {
                     {product.description}
                   </p>
                   
-                  {/* Price and Stock */}
+                  {/* Harga dan Stok */}
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-purple-600">
-                      ${product.price}
+                      <Rupiah value={product.price} />
                     </span>
                     <span className={`text-sm font-medium ${
                       product.stock > 10 ? 'text-green-600' : 
                       product.stock > 5 ? 'text-yellow-600' : 'text-red-600'
                     }`}>
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                      {product.stock > 0 ? `${product.stock} tersedia` : 'Stok habis'}
                     </span>
                   </div>
+
                   
                   {/* Action Buttons */}
                   <div className="flex space-x-3">

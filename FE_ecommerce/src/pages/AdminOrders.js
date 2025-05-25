@@ -1,5 +1,6 @@
 // AdminOrderManagement.js
 import { useState, useEffect } from "react";
+import Rupiah from "../components/Rupiah";
 
 const AdminOrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -360,12 +361,12 @@ const AdminOrderManagement = () => {
                                 {item.product?.title || item.title || 'Unknown Product'}
                               </h5>
                               <p className="text-xs text-gray-600">
-                                Qty: {item.quantity} × ${item.price}
+                                Qty: {item.quantity} × <Rupiah value={item.price}/>
                               </p>
                             </div>
                           </div>
                           <div className="text-sm font-semibold text-gray-900">
-                            ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                            <Rupiah value={((item.price || 0) * (item.quantity || 1)).toFixed(0)}/>
                           </div>
                         </div>
                       )) : (
@@ -378,7 +379,7 @@ const AdminOrderManagement = () => {
                   <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
                     <div className="flex justify-between items-center">
                       <div className="text-lg font-bold text-gray-900">
-                        Total: <span className="text-purple-600">${order.total}</span>
+                        Total: <span className="text-purple-600"><Rupiah value={order.total}/></span>
                       </div>
                     </div>
                   </div>

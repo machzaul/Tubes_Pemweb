@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Rupiah from "../components/Rupiah";
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
@@ -163,11 +164,11 @@ const Cart = () => {
 
   // Hitung subtotal dan total
   const calculateSubtotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(0);
   };
 
   const shippingCost = 0; // Gratis ongkir
-  const totalCost = (parseFloat(calculateSubtotal()) + shippingCost).toFixed(2);
+  const totalCost = (parseFloat(calculateSubtotal()) + shippingCost).toFixed(0);
 
   // Check if checkout should be disabled
   const canProceedToCheckout = stockErrors.length === 0 && cart.length > 0;
@@ -289,7 +290,7 @@ const Cart = () => {
                         {/* Price */}
                         <div className="col-span-2 text-center">
                           <span className="text-lg font-semibold text-gray-800">
-                            ${item.price}
+                            <Rupiah value={item.price}/>
                           </span>
                         </div>
 
@@ -322,7 +323,7 @@ const Cart = () => {
                         {/* Subtotal */}
                         <div className="col-span-1 text-center">
                           <span className="text-lg font-semibold text-blue-600">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            <Rupiah value={(item.price * item.quantity).toFixed(0)}/>
                           </span>
                         </div>
 
@@ -354,7 +355,7 @@ const Cart = () => {
               <div className="space-y-4">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({cart.length} items)</span>
-                  <span className="font-semibold">${calculateSubtotal()}</span>
+                  <span className="font-semibold"><Rupiah value={calculateSubtotal()}/></span>
                 </div>
                 
                 <div className="flex justify-between text-gray-600">
@@ -365,7 +366,7 @@ const Cart = () => {
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-xl font-bold text-gray-800">
                     <span>Total</span>
-                    <span className="text-blue-600">${totalCost}</span>
+                    <span className="text-blue-600"><Rupiah value={totalCost}/></span>
                   </div>
                 </div>
               </div>

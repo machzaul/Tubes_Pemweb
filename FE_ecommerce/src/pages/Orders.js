@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import Rupiah from "../components/Rupiah";
 
 const OrderTracking = () => {
   const [orderId, setOrderId] = useState("");
@@ -242,7 +243,7 @@ const OrderTracking = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Total</p>
-                    <p className="font-semibold text-gray-900">${searchedOrder.total}</p>
+                    <p className="font-semibold text-gray-900"><Rupiah value={searchedOrder.total}/></p>
                   </div>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-6">
@@ -299,18 +300,18 @@ const OrderTracking = () => {
                 {searchedOrder.items.map((item, index) => (
                   <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                     <img 
-                      src={item.image} 
-                      alt={item.title} 
+                      src={item.product.image} 
+                      alt={item.product.title} 
                       className="h-16 w-16 object-contain rounded border bg-white"
                     />
                     <div className="flex-1">
-                      <h5 className="font-medium text-gray-900">{item.title}</h5>
+                      <h5 className="font-medium text-gray-900">{item.product.title}</h5>
                       <p className="text-sm text-gray-600">
-                        Qty: {item.quantity} × ${item.price}
+                        Qty: {item.quantity} × <Rupiah value={item.price}/>
                       </p>
                     </div>
                     <div className="text-lg font-semibold text-gray-900">
-                      ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                      <Rupiah value={((item.price || 0) * (item.quantity || 1)).toFixed(0)}/>
                     </div>
                   </div>
                 ))}
@@ -321,7 +322,7 @@ const OrderTracking = () => {
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="flex justify-between items-center">
                 <div className="text-lg font-bold text-gray-900">
-                  Total: <span className="text-blue-600">${searchedOrder.total}</span>
+                  Total: <span className="text-blue-600"><Rupiah value={searchedOrder.total}/></span>
                 </div>
               </div>
             </div>

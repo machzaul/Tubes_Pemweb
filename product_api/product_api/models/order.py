@@ -9,9 +9,9 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     order_id = Column(String(50), unique=True, nullable=False)  # Custom order ID
     customer_info_id = Column(Integer, ForeignKey('customer_info.id'), nullable=False)
-    subtotal = Column(Numeric(10, 2), nullable=False)
+    subtotal = Column(Numeric(12, 3), nullable=False)
     shipping = Column(Numeric(10, 2), nullable=False, default=0)
-    total = Column(Numeric(10, 2), nullable=False)
+    total = Column(Numeric(12, 3), nullable=False)
     status = Column(String(50), nullable=False, default='pending')
     status_history = Column(JSON)  # Store status history as JSON
     order_date = Column(DateTime, default=func.now())
