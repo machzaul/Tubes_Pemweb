@@ -5,6 +5,7 @@ import LogoutButton from '../components/LogoutButton';
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:6543';
@@ -33,6 +34,11 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  const filteredProducts = products.filter((product) =>
+    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const deleteProduct = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
@@ -140,7 +146,7 @@ const AdminDashboard = () => {
                 </svg>
                 Add Product
               </Link>
-              <LogoutButton className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+              <LogoutButton className="bg-red-900 hover:bg-red-600 text-white px-4 py-2 rounded">
                 Logout
               </LogoutButton>
             </div>
@@ -236,15 +242,20 @@ const AdminDashboard = () => {
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-900">Product Inventory</h2>
-              <button
-                onClick={fetchProducts}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
+              <div className="relative max-w-xs w-md mt-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-1.5 border border-gray-500 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-12 gap-4 text-sm font-semibold text-gray-600 uppercase tracking-wider mt-4">
               <div className="col-span-5">PRODUCT</div>
@@ -276,7 +287,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ) : (
-              products.map((product) => (
+              filteredProducts.map((product) => (
                 <div key={product.id} className="px-6 py-6 hover:bg-gray-50 transition-colors">
                   <div className="grid grid-cols-12 gap-4 items-center">
                     {/* Product Info */}
