@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import useAlert from "../hooks/useAlert"; // Sesuaikan path
 import AlertContainer from "../components/ui/AlertContainer"; // Sesuaikan path
 import Rupiah from "../components/Rupiah";
+import PropTypes from "prop-types";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -140,11 +141,11 @@ const Products = () => {
             {filteredProducts.map((product) => (
               <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 {/* Product Image */}
-                <div className="bg-gray-200 overflow-hidden flex justify-center items-center p-4">
+                <div className="bg-gray-200 overflow-hidden flex justify-center items-center p-0">
                   <img 
                     src={product.image} 
                     alt={product.title}
-                    className="w-40 h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-110"
+                    className="w-full h-48 object-cover transition-transform duration-300 hover:scale-110"
                   />
                 </div>
                 
@@ -153,8 +154,10 @@ const Products = () => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
                     {product.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {product.description}
+                  <p className="text-gray-600 text-sm mb-4">
+                    {product.description.length > 40
+                      ? product.description.slice(0, 40) + "..."
+                      : product.description}
                   </p>
                   
                   {/* Harga dan Stok */}
