@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Rupiah from "../components/Rupiah";
+import OrderSuccessAlert from "../components/ui/OrderSuccessAlert";
+import { Alert, AlertTitle, AlertDescription } from "../components/ui/Alert"; // sesuaikan path jika berbeda
+
 
 const Checkout = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]); // Products from backend
   const [stockErrors, setStockErrors] = useState([]); // Track stock validation errors
+  const [copied, setCopied] = useState(false);
+  const [showWarningAlert, setShowWarningAlert] = useState(false);
+
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
     email: "",
@@ -13,9 +19,14 @@ const Checkout = () => {
     phoneNumber: ""
   });
   const [loading, setLoading] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [redirectTimer, setRedirectTimer] = useState(null);
   const navigate = useNavigate();
 
   const API_BASE_URL = 'http://localhost:6543/api'; // Adjust to your backend URL
+
+  
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -31,6 +42,15 @@ const Checkout = () => {
     // Fetch products from backend
     fetchProducts();
   }, [navigate]);
+
+  // Cleanup timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimer) {
+        clearTimeout(redirectTimer);
+      }
+    };
+  }, [redirectTimer]);
 
   // Fetch products from backend
   const fetchProducts = async () => {
@@ -207,6 +227,37 @@ const Checkout = () => {
     }
   };
 
+  // Handle successful order placement
+  const handleOrderSuccess = (successOrderId) => {
+    setOrderId(successOrderId);
+    setShowSuccessAlert(true);
+    
+    // Set up redirect timer (5 seconds)
+    //const timer = setTimeout(() => {
+    //  navigate("/orders");
+    //}, 5000);
+    
+    //setRedirectTimer(timer);
+  };
+
+  // Handle alert close (manual close or after copy)
+  const handleAlertClose = () => {
+    setShowSuccessAlert(false);
+
+    // Hanya pindah ke halaman orders jika Order ID sudah disalin
+    if (copied) {
+      navigate("/orders");
+    } else {
+      setShowWarningAlert(true); // munculkan kembali alert
+    }
+  };
+
+  // Handle copy action
+  const handleCopySuccess = () => {
+    console.log('Order ID copied successfully');
+    setCopied(true); // aktifkan flag setelah copy
+  };
+
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
     
@@ -247,11 +298,11 @@ const Checkout = () => {
       }
 
       // Generate unique order ID
-      const orderId = generateOrderId();
+      const generatedOrderId = generateOrderId();
 
       // Prepare order data for backend
       const orderData = {
-        orderId: orderId,
+        orderId: generatedOrderId,
         customerInfo: {
           fullName: customerInfo.fullName,
           email: customerInfo.email,
@@ -296,8 +347,8 @@ const Checkout = () => {
       // Clear cart from localStorage
       localStorage.removeItem("cart");
       
-      alert(`Order placed successfully! Order ID: ${createdOrder.orderId || orderId}\nYou can track your order using this ID.`);
-      navigate("/orders");
+      // Show success alert with order ID
+      handleOrderSuccess(createdOrder.orderId || generatedOrderId);
 
     } catch (error) {
       console.error('Error placing order:', error);
@@ -509,15 +560,39 @@ const Checkout = () => {
 
             {/* Order Status Info */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h3 className="text-sm font-semibold text-blue-900 mb-2">Order Status Information</h3>
+              <h3 className="text-sm font-semibold text-blue-900 mb-2">Informasi status pengiriman</h3>
               <p className="text-xs text-blue-700">
-                After placing your order, you will receive an Order ID that you can use to track your order status. 
-                Your order will initially be set to "Pending" and will be updated by our admin team as it progresses.
+                Setelah Anda melakukan pemesanan, Anda akan menerima ID Pesanan yang dapat digunakan untuk melacak status pesanan Anda.
+                Pesanan Anda akan awalnya berstatus "Pending" dan akan diperbarui oleh tim admin kami seiring dengan proses berjalan.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Success Alert */}
+      {showSuccessAlert && (
+        <OrderSuccessAlert
+          orderId={orderId}
+          onClose={handleAlertClose}
+          onCopy={handleCopySuccess}
+        />
+      )}
+      {showWarningAlert && (
+        <Alert 
+          variant="warning" 
+          show={showWarningAlert}
+          onClose={() => setShowWarningAlert(false)}
+          autoClose={false} // agar tidak hilang otomatis
+        >
+          <div>
+            <AlertTitle>Kamu Harus menyalin pengiriman ID </AlertTitle>
+            <AlertDescription>
+              Tolong salin ID pengiriman anda supaya bisa melacak status pengiriman.
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
     </div>
   );
 };

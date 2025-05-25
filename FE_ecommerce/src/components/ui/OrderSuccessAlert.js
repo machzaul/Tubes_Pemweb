@@ -6,47 +6,43 @@ const OrderSuccessAlert = ({ orderId, onClose, onCopy }) => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(orderId);
-      setCopied(true);
-      if (onCopy) onCopy();
-      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback untuk browser yang tidak support clipboard API
+      // Fallback
       const textArea = document.createElement('textarea');
       textArea.value = orderId;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      setCopied(true);
-      if (onCopy) onCopy();
-      setTimeout(() => setCopied(false), 2000);
     }
+    setCopied(true);
+    if (onCopy) onCopy();
   };
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full">
       <div className="bg-green-50 border border-green-200 rounded-lg shadow-lg p-4">
         <div className="flex items-start gap-3">
-          {/* Success Icon */}
+          {/* Icon */}
           <div className="flex-shrink-0 mt-0.5">
             <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          
+
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-green-800 mb-2">Order Placed Successfully!</h4>
-            
-            {/* Order ID Box */}
+            <h4 className="font-semibold text-green-800 mb-2">Order Anda Berhasil!</h4>
+
             <div className="bg-white rounded border p-3 mb-3">
-              <p className="text-xs text-gray-600 mb-1">Your Order ID:</p>
+              <p className="text-xs text-gray-600 mb-1">ID pengiriman Anda:</p>
               <div className="flex items-center justify-between">
                 <code className="text-sm font-mono text-gray-800 break-all">{orderId}</code>
                 <button
                   onClick={handleCopy}
                   className="ml-2 p-1.5 text-green-600 hover:text-green-800 hover:bg-green-100 rounded transition-colors flex items-center gap-1"
                   title="Copy to clipboard"
+                  disabled={copied}
                 >
                   {copied ? (
                     <>
@@ -66,18 +62,22 @@ const OrderSuccessAlert = ({ orderId, onClose, onCopy }) => {
                 </button>
               </div>
             </div>
-            
+
             <p className="text-sm text-green-700">
-              Save this Order ID to track your order status. Redirecting to orders page in 5 seconds...
+              {copied
+                ? 'Order ID copied successfully. You can close this alert.'
+                : 'Please copy your Order ID to track your order status.'}
             </p>
           </div>
-          
-          {/* Close Button */}
+
+          {/* Close button */}
           <button
             onClick={onClose}
             className="flex-shrink-0 p-1 rounded-md hover:bg-green-100 transition-colors"
+            disabled={!copied}
+            title={!copied ? 'Copy the Order ID before closing' : 'Close'}
           >
-            <svg className="w-4 h-4 text-green-600 hover:text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 ${copied ? 'text-green-600 hover:text-green-800' : 'text-gray-400 cursor-not-allowed'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
