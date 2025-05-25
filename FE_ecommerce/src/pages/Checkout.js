@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useAlert from "../hooks/useAlert"; // Sesuaikan path
+import AlertContainer from "../components/ui/Alert"; // Sesuaikan path
 
 const Checkout = () => {
   const [cart, setCart] = useState([]);
@@ -14,7 +16,27 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Gunakan alert hook
+  const { alerts, showSuccess, showError, showWarning, showInfo, removeAlert } = useAlert();
+
   const API_BASE_URL = 'http://localhost:6543/api'; // Adjust to your backend URL
+
+  // Fungsi untuk copy ke clipboard
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess("Order ID copied to clipboard!", "Copied!");
+    } catch (err) {
+      // Fallback untuk browser yang tidak support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showSuccess("Order ID copied to clipboard!", "Copied!");
+    }
+  };
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -22,8 +44,10 @@ const Checkout = () => {
 
     // Redirect if cart is empty
     if (storedCart.length === 0) {
-      alert("Your cart is empty. Please add some products first.");
-      navigate("/products");
+      showWarning("Please add some products to your cart first.", "Cart is Empty");
+      setTimeout(() => {
+        navigate("/products");
+      }, 2000);
       return;
     }
 
@@ -46,7 +70,7 @@ const Checkout = () => {
       validateCartStock(storedCart, data.products);
     } catch (error) {
       console.error('Error fetching products:', error);
-      alert('Error fetching product information. Please try again.');
+      showError('Error fetching product information. Please try again.', 'Network Error');
     }
   };
 
@@ -74,6 +98,10 @@ const Checkout = () => {
     });
     
     setStockErrors(errors);
+    
+    if (errors.length > 0) {
+      showWarning("Some items in your cart have stock issues. Please review them before checkout.", "Stock Issues Detected");
+    }
   };
 
   // Fix cart quantities to match available stock
@@ -100,8 +128,12 @@ const Checkout = () => {
     validateCartStock(updatedCart, products);
     
     if (updatedCart.length === 0) {
-      alert("All items in your cart are out of stock. Redirecting to products page.");
-      navigate("/products");
+      showError("All items in your cart are out of stock. Redirecting to products page.", "No Available Items");
+      setTimeout(() => {
+        navigate("/products");
+      }, 3000);
+    } else {
+      showSuccess("Cart quantities have been adjusted to match available stock.", "Cart Updated");
     }
   };
 
@@ -110,12 +142,12 @@ const Checkout = () => {
     const backendProduct = products.find(p => p.id === productId);
     
     if (!backendProduct) {
-      alert("This product is no longer available.");
+      showError("This product is no longer available.", "Product Unavailable");
       return;
     }
     
     if (newQuantity > backendProduct.stock) {
-      alert(`Sorry, only ${backendProduct.stock} items are available in stock.`);
+      showWarning(`Sorry, only ${backendProduct.stock} items are available in stock.`, "Insufficient Stock");
       return;
     }
     
@@ -125,6 +157,7 @@ const Checkout = () => {
       setCart(updatedCart);
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       validateCartStock(updatedCart, products);
+      showInfo("Item removed from cart.", "Item Removed");
       return;
     }
 
@@ -157,7 +190,7 @@ const Checkout = () => {
   const generateOrderId = () => {
     const timestamp = Date.now().toString();
     const random = Math.random().toString(36).substr(2, 9);
-    return `${timestamp.substr(-8)}-${random}`;
+    return `ORD-${timestamp.substr(-8)}-${random.toUpperCase()}`;
   };
 
   // Update product stock in backend
@@ -211,17 +244,18 @@ const Checkout = () => {
     
     // Check if there are any stock errors
     if (stockErrors.length > 0) {
-      alert("Please resolve stock issues before placing your order. You can use the 'Fix Cart' button to automatically adjust quantities.");
+      showError("Please resolve stock issues before placing your order. Use the 'Fix Cart' button to automatically adjust quantities.", "Stock Issues Detected");
       return;
     }
     
     // Validate form
     if (!customerInfo.fullName || !customerInfo.email || !customerInfo.address || !customerInfo.phoneNumber) {
-      alert("Please fill in all required fields.");
+      showWarning("Please fill in all required fields.", "Incomplete Information");
       return;
     }
 
     setLoading(true);
+    showInfo("Processing your order...", "Please Wait");
 
     try {
       // Final stock validation before placing order
@@ -240,8 +274,10 @@ const Checkout = () => {
       });
 
       if (finalValidation.length > 0) {
-        alert(`Stock has changed for: ${finalValidation.join(', ')}. Please refresh and try again.`);
-        window.location.reload();
+        showError(`Stock has changed for: ${finalValidation.join(', ')}. Please refresh and try again.`, "Stock Changed");
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
         return;
       }
 
@@ -295,19 +331,96 @@ const Checkout = () => {
       // Clear cart from localStorage
       localStorage.removeItem("cart");
       
-      alert(`Order placed successfully! Order ID: ${createdOrder.orderId || orderId}\nYou can track your order using this ID.`);
-      navigate("/orders");
+      // Show success alert with copy feature
+      const finalOrderId = createdOrder.orderId || orderId;
+      showOrderSuccessAlert(finalOrderId);
+      
+      setTimeout(() => {
+        navigate("/orders");
+      }, 5000);
 
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      showError('Failed to place order. Please try again.', 'Order Failed');
     } finally {
       setLoading(false);
     }
   };
 
-  if (cart.length === 0) {
-    return <div className="p-10 text-center">Loading...</div>;
+  // Custom success alert dengan copy functionality
+  const showOrderSuccessAlert = (orderId) => {
+    const customAlert = {
+      id: Date.now().toString(),
+      variant: 'success',
+      title: 'Order Placed Successfully!',
+      message: orderId,
+      autoClose: false, // Jangan auto close
+      duration: 0
+    };
+    
+    // Custom alert dengan tombol copy
+    const { alerts: currentAlerts, removeAlert: currentRemoveAlert } = useAlert();
+    
+    // Tambahkan alert ke state
+    const alertElement = (
+      <div className="fixed bottom-4 right-4 z-50 max-w-sm w-full">
+        <div className="flex items-start gap-3 p-4 rounded-lg border shadow-lg backdrop-blur-sm bg-green-50 border-green-200 text-green-800">
+          {/* Success Icon */}
+          <div className="flex-shrink-0 mt-0.5">
+            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-sm">Order Placed Successfully!</h4>
+            <div className="mt-2 p-2 bg-white rounded border">
+              <p className="text-xs text-gray-600 mb-1">Order ID:</p>
+              <div className="flex items-center justify-between">
+                <code className="text-sm font-mono text-gray-800">{orderId}</code>
+                <button
+                  onClick={() => copyToClipboard(orderId)}
+                  className="ml-2 p-1 text-green-600 hover:text-green-800 transition-colors"
+                  title="Copy to clipboard"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <p className="text-xs opacity-90 mt-2">You can track your order using this ID. Redirecting to orders page...</p>
+          </div>
+          
+          {/* Close Button */}
+          <button
+            onClick={() => {}}
+            className="flex-shrink-0 ml-2 p-1 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            <svg className="w-4 h-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+
+    // Render custom alert (ini akan ditangani oleh state management yang lebih kompleks)
+    // Untuk sekarang, kita gunakan showSuccess biasa dengan informasi lengkap
+    showSuccess(
+      `Your order has been placed successfully! Order ID: ${orderId}. Click here to copy the Order ID. You can track your order using this ID.`,
+      "Order Placed Successfully!"
+    );
+  };
+
+  if (cart.length === 0 && !loading) {
+    return (
+      <div className="p-10 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+        <p>Loading...</p>
+      </div>
+    );
   }
 
   return (
@@ -517,6 +630,9 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* Alert Container */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
     </div>
   );
 };

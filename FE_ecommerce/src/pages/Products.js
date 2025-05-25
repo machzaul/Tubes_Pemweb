@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
+import useAlert from "../hooks/useAlert"; // Sesuaikan path
+import AlertContainer from "../components/ui/AlertContainer"; // Sesuaikan path
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:6543';
+  
+  // Gunakan alert hook
+  const { alerts, showSuccess, showError, removeAlert } = useAlert();
 
   const fetchProducts = async () => {
     try {
@@ -18,6 +23,8 @@ const Products = () => {
       localStorage.setItem("adminProducts", JSON.stringify(data.products || []));
     } catch (err) {
       console.error("Failed to fetch products from backend:", err);
+      showError("Failed to load products from server. Using cached data.");
+      
       // fallback to local storage or sample data
       const storedProducts = JSON.parse(localStorage.getItem("adminProducts")) || [];
       if (storedProducts.length > 0) {
@@ -48,7 +55,12 @@ const Products = () => {
 
     localStorage.setItem("cart", JSON.stringify(storedCart));
     window.dispatchEvent(new Event('cartUpdated'));
-    alert("Product added to cart!");
+    
+    // Ganti alert dengan komponen cantik
+    showSuccess(
+      `${product.title} has been added to your cart!`,
+      "Added to Cart"
+    );
   };
 
   const filteredProducts = products.filter(product =>
@@ -161,6 +173,9 @@ const Products = () => {
           </div>
         )}
       </div>
+
+      {/* Alert Container */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
     </div>
   );
 };
