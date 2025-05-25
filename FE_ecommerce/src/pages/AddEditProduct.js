@@ -21,6 +21,43 @@ const AddEditProduct = () => {
   // Backend API base URL - adjust this according to your backend configuration
   const API_BASE_URL = "http://localhost:6543/api";
 
+  const formatRupiah = (angka, prefix = "Rp") => {
+    if (!angka) return prefix + "0";
+    let number_string = angka.toString().replace(/[^,\d]/g, ""),
+      split = number_string.split(","),
+      sisa = split[0].length % 3,
+      rupiah = split[0].substr(0, sisa),
+      ribuan = split[0].substr(sisa).match(/\d{3}/g);
+
+    if (ribuan) {
+      rupiah += (sisa ? "." : "") + ribuan.join(".");
+    }
+
+    rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+    return prefix + rupiah;
+  };
+
+  const parseRupiahToNumber = (rupiahString) => {
+    return parseFloat(rupiahString.replace(/[^\d]/g, "")) || 0;
+  };
+
+  const handlePriceChange = (e) => {
+    const raw = e.target.value;
+    const numeric = parseRupiahToNumber(raw);
+    setFormData(prev => ({
+      ...prev,
+      price: numeric
+    }));
+    if (errors.price) {
+      setErrors(prev => ({
+        ...prev,
+        price: ""
+      }));
+    }
+  };
+
+
+
   useEffect(() => {
     if (isEdit) {
       fetchProduct();
@@ -279,30 +316,29 @@ const AddEditProduct = () => {
               )}
             </div>
 
-            {/* Price and Stock */}
+            {/* Harga dan Stok */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price ($) *
+                  Harga (Rp) *
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id="price"
                   name="price"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={handleChange}
+                  value={formatRupiah(formData.price)}
+                  onChange={handlePriceChange}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                     errors.price ? "border-red-300 bg-red-50" : "border-gray-300"
                   }`}
-                  placeholder="0.00"
+                  placeholder="Rp0"
                   disabled={loading}
                 />
                 {errors.price && (
                   <p className="mt-1 text-sm text-red-600">{errors.price}</p>
                 )}
               </div>
+
 
               <div>
                 <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">

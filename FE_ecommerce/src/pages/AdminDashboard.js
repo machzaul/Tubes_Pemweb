@@ -304,7 +304,7 @@ const AdminDashboard = () => {
                     {/* Price */}
                     <div className="col-span-2 text-center">
                       <span className="text-lg font-semibold text-gray-900">
-                        ${product.price}
+                        RP.{product.price}
                       </span>
                     </div>
 
