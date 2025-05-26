@@ -28,6 +28,9 @@ MachzaulMart adalah platform e-commerce modern yang dibangun dengan teknologi te
 ├── React Hooks            # State Management
 └── Responsive Design      # Mobile-first Approach
 
+
+
+
 ### Backend
 ├── Python 3.8+            # Programming Language
 ├── Pyramid Framework      # Web Framework
@@ -35,6 +38,10 @@ MachzaulMart adalah platform e-commerce modern yang dibangun dengan teknologi te
 ├── Waitress              # WSGI Server
 ├── Alembic               # Database Migration
 └── JWT Authentication    # Security
+
+
+
+
 
 ## 📋 Prerequisites
 
@@ -52,7 +59,7 @@ Pastikan sistem Anda telah terinstall:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/machzaulmart.git
+git clone https://github.com/machzaul/Tubes_Pemweb.git
 
 # Navigate to project directory
 cd Tubes Pemweb
@@ -445,6 +452,8 @@ pserve development.ini --reload
 Frontend Debug
 bash# Start with verbose logging
 REACT_APP_LOG_LEVEL=debug npm start
+
+```
 📞 Support & Contact
 Jika Anda mengalami masalah atau membutuhkan bantuan:
 
@@ -568,4 +577,3 @@ Pilih format yang sesuai dengan kebutuhan tampilan README Anda!
 Dibuat dengan ❤️ oleh Tim MachzaulMart
 🚀 Live Demo | 📚 Documentation | 🐛 Report Bug
 </div>
-```
