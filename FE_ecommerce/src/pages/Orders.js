@@ -196,14 +196,14 @@ const OrderTracking = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Track Your Order</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Lacak Pesanan Mu</h1>
           
           {/* Search Section */}
           <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <input
                 type="text"
-                placeholder="Enter your Order ID"
+                placeholder="Masukkan ID Pesanan"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 className="flex-1 max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"

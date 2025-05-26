@@ -495,6 +495,9 @@ const AdminOrderManagement = () => {
                             <div>
                               <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Pelanggan</h4>
                               <div className="space-y-2 text-sm text-gray-600">
+                                <div><span className="font-medium">ID : </span>
+                                  {order.orderId || 'N/A'}
+                                </div>
                                 <div><span className="font-medium">Nama Lengkap:</span> {order.customerInfo?.fullName || 'N/A'}</div>
                                 <div><span className="font-medium">Email:</span> {order.customerInfo?.email || 'N/A'}</div>
                                 <div><span className="font-medium">Telepon:</span> {order.customerInfo?.phoneNumber || 'N/A'}</div>
