@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import Rupiah from "../components/Rupiah";
 import { useNavigate } from "react-router-dom";
-
+import useAlert from "../hooks/useAlert";
+import AlertContainer from "../components/ui/AlertContainer";
 
 const AdminOrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -14,7 +15,9 @@ const AdminOrderManagement = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  
+  // Alert system
+  const { alerts, showSuccess, showError, showWarning, showInfo, removeAlert } = useAlert();
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 6;
@@ -124,9 +127,11 @@ const AdminOrderManagement = () => {
       const sortedOrders = sortOrders(data.orders);
       
       setOrders(sortedOrders);
+      showInfo("Data pesanan berhasil dimuat", "Info");
     } catch (error) {
       console.error('Error loading orders:', error);
       setError('Failed to load orders. Please try again.');
+      showError("Gagal memuat data pesanan. Silakan coba lagi.", "Error!");
     } finally {
       setLoading(false);
     }
@@ -165,10 +170,15 @@ const AdminOrderManagement = () => {
   };
 
   const updateOrderStatus = async (orderId, status, note = '') => {
+    //if (currentOrder?.status === 'cancelled') {
+    //  showWarning("Status pesanan yang sudah dibatalkan tidak dapat diubah.", "Tidak Diizinkan!");
+    //  return;
+    //}
     if (!status) {
-      alert('Please select a status');
+      showWarning("Silakan pilih status terlebih dahulu", "Peringatan!");
       return;
     }
+
 
     const currentOrder = orders.find(order => order.id === orderId);
     const previousStatus = currentOrder?.status;
@@ -184,7 +194,7 @@ const AdminOrderManagement = () => {
         credentials: 'include',
         body: JSON.stringify({
           status: status,
-          note: note || `Status updated to ${orderStatuses[status]?.label || status}`,
+          note: note || `Status diperbarui ke ${orderStatuses[status]?.label || status}`,
           updatedBy: 'admin',
           previousStatus: previousStatus
         })
@@ -202,9 +212,10 @@ const AdminOrderManagement = () => {
         try {
           await restoreStock(orderId);
           console.log('Stock restored for cancelled order');
+          showInfo("Stok berhasil dikembalikan untuk pesanan yang dibatalkan", "Info");
         } catch (stockError) {
           console.error('Failed to restore stock:', stockError);
-          // Continue with status update even if stock restore fails
+          showWarning("Gagal mengembalikan stok, tapi status berhasil diperbarui", "Peringatan!");
         }
       }
       
@@ -221,11 +232,14 @@ const AdminOrderManagement = () => {
       setNewStatus("");
       setStatusNote("");
       
-      alert(`Order ${updatedOrder.orderId} status updated to ${orderStatuses[status]?.label || status}`);
+      showSuccess(
+        `Status pesanan ${updatedOrder.orderId} berhasil diperbarui ke ${orderStatuses[status]?.label || status}`,
+        "Berhasil!"
+      );
       
     } catch (error) {
       console.error('Error updating order status:', error);
-      alert(`Error updating order status: ${error.message}`);
+      showError(`Gagal memperbarui status pesanan: ${error.message}`, "Error!");
     } finally {
       setLoading(false);
     }
@@ -235,29 +249,18 @@ const AdminOrderManagement = () => {
     const orderToDelete = orders.find(order => order.id === orderId);
     const shouldRestoreStock = orderToDelete && orderToDelete.status !== 'completed';
     
-    const confirmMessage = shouldRestoreStock 
-      ? `Are you sure you want to delete order ${orderIdString}? This will also restore the stock for ordered items.`
-      : `Are you sure you want to delete order ${orderIdString}? Stock will NOT be restored as this order is completed.`;
-
-    if (!window.confirm(confirmMessage)) {
-      return;
-    }
 
     try {
       setLoading(true);
       
       // If order is not completed, restore stock first
-      if (shouldRestoreStock) {
-        try {
-          await restoreStock(orderId);
-          console.log('Stock restored before deletion');
-        } catch (stockError) {
-          console.error('Failed to restore stock before deletion:', stockError);
-          if (!window.confirm('Failed to restore stock. Continue with deletion anyway?')) {
-            return;
-          }
-        }
+          if (shouldRestoreStock) {
+      try {
+        await restoreStock(orderId);
+      } catch (stockError) {
+        // gagal restore stok, tapi kita abaikan error ini dan tetap lanjut
       }
+    }
       
       const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
         method: 'DELETE',
@@ -279,14 +282,15 @@ const AdminOrderManagement = () => {
       setOrders(prevOrders => prevOrders.filter(order => order.id !== orderId));
       
       const stockMessage = shouldRestoreStock 
-        ? ' and stock restored' 
-        : ' (stock not restored - order was completed)';
       
-      alert(`Order ${orderIdString} deleted successfully${stockMessage}`);
+      showSuccess(
+        `Pesanan ${orderIdString} berhasil dihapus ${stockMessage}`,
+        "Berhasil!"
+      );
       
     } catch (error) {
       console.error('Error deleting order:', error);
-      alert(`Error deleting order: ${error.message}`);
+      showError(`Gagal menghapus pesanan: ${error.message}`, "Error!");
     } finally {
       setLoading(false);
     }
@@ -295,14 +299,15 @@ const AdminOrderManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'numeric',
+    return date.toLocaleDateString('id-ID', {
       day: 'numeric',
+      month: 'numeric',
       year: 'numeric'
     });
   };
 
   const handleRefresh = () => {
+    showInfo("Memuat ulang data pesanan...", "Info");
     loadOrders();
   };
 
@@ -354,10 +359,11 @@ const AdminOrderManagement = () => {
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow p-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading orders...</p>
+              <p className="mt-4 text-gray-600">Memuat pesanan...</p>
             </div>
           </div>
         </div>
+        <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
       </div>
     );
   }
@@ -367,12 +373,12 @@ const AdminOrderManagement = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin - Order Management</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Admin - Manajemen Pesanan</h1>
             <p className="mt-1 text-sm text-gray-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalOrders)} of {totalOrders} orders
+              Menampilkan {startIndex + 1} sampai {Math.min(endIndex, totalOrders)} dari {totalOrders} pesanan
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Sorted by status priority: Pending → Confirmed → Preparing → Shipping → Delivered → Completed → Cancelled
+              Diurutkan berdasarkan prioritas status: Pending → Confirmed → Preparing → Shipping → Delivered → Completed → Cancelled
             </p>
           </div>
           <div className="flex gap-2">
@@ -381,13 +387,13 @@ const AdminOrderManagement = () => {
               disabled={loading}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors"
             >
-              {loading ? 'Refreshing...' : 'Refresh'}
+              {loading ? 'Memuat Ulang...' : 'Muat Ulang'}
             </button>
             <button
               onClick={() => navigate("/adminDashboard")}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
             >
-              Back to Dashboard
+              Kembali ke Dashboard
             </button>
           </div>
         </div>
@@ -402,8 +408,8 @@ const AdminOrderManagement = () => {
         {orders.length === 0 && !loading ? (
           <div className="text-center py-12">
             <div className="bg-white rounded-lg shadow p-8">
-              <h3 className="text-lg font-medium text-gray-900">No Orders</h3>
-              <p className="mt-2 text-gray-500">No orders have been placed yet.</p>
+              <h3 className="text-lg font-medium text-gray-900">Tidak Ada Pesanan</h3>
+              <p className="mt-2 text-gray-500">Belum ada pesanan yang dibuat.</p>
             </div>
           </div>
         ) : (
@@ -412,12 +418,12 @@ const AdminOrderManagement = () => {
               {/* Table Header */}
               <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
                 <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700">
-                  <div className="col-span-2">Order ID</div>
-                  <div className="col-span-3">Customer</div>
-                  <div className="col-span-2">Date</div>
+                  <div className="col-span-2">ID Pesanan</div>
+                  <div className="col-span-3">Pelanggan</div>
+                  <div className="col-span-2">Tanggal</div>
                   <div className="col-span-2">Total</div>
                   <div className="col-span-2">Status</div>
-                  <div className="col-span-1">Actions</div>
+                  <div className="col-span-1">Aksi</div>
                 </div>
               </div>
 
@@ -468,7 +474,10 @@ const AdminOrderManagement = () => {
                                 }
                               }}
                               onClick={(e) => e.stopPropagation()}
-                              className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              disabled={order.status === 'cancelled'}
+                              className={`text-xs border border-gray-300 rounded px-2 py-1 ${
+                                order.status === 'cancelled' ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white'
+                              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
                             >
                               {Object.entries(orderStatuses).map(([key, status]) => (
                                 <option key={key} value={key}>{status.label}</option>
@@ -484,18 +493,18 @@ const AdminOrderManagement = () => {
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Customer Information */}
                             <div>
-                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Customer Information</h4>
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Informasi Pelanggan</h4>
                               <div className="space-y-2 text-sm text-gray-600">
-                                <div><span className="font-medium">Full Name:</span> {order.customerInfo?.fullName || 'N/A'}</div>
+                                <div><span className="font-medium">Nama Lengkap:</span> {order.customerInfo?.fullName || 'N/A'}</div>
                                 <div><span className="font-medium">Email:</span> {order.customerInfo?.email || 'N/A'}</div>
-                                <div><span className="font-medium">Phone:</span> {order.customerInfo?.phoneNumber || 'N/A'}</div>
-                                <div><span className="font-medium">Address:</span> {order.customerInfo?.address || 'N/A'}</div>
+                                <div><span className="font-medium">Telepon:</span> {order.customerInfo?.phoneNumber || 'N/A'}</div>
+                                <div><span className="font-medium">Alamat:</span> {order.customerInfo?.address || 'N/A'}</div>
                               </div>
                             </div>
 
                             {/* Order Items */}
                             <div>
-                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Order Items</h4>
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Item Pesanan</h4>
                               <div className="space-y-2 max-h-40 overflow-y-auto">
                                 {order.items && order.items.length > 0 ? order.items.map((item, itemIndex) => (
                                   <div key={itemIndex} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
@@ -510,7 +519,7 @@ const AdminOrderManagement = () => {
                                       />
                                       <div>
                                         <h5 className="text-xs font-medium text-gray-900">
-                                          {item.product?.title || item.title || 'Unknown Product'}
+                                          {item.product?.title || item.title || 'Produk Tidak Diketahui'}
                                         </h5>
                                         <p className="text-xs text-gray-600">
                                           Qty: {item.quantity} × <Rupiah value={item.price}/>
@@ -522,7 +531,7 @@ const AdminOrderManagement = () => {
                                     </div>
                                   </div>
                                 )) : (
-                                  <p className="text-gray-500 text-xs">No items found</p>
+                                  <p className="text-gray-500 text-xs">Tidak ada item ditemukan</p>
                                 )}
                               </div>
                             </div>
@@ -531,7 +540,7 @@ const AdminOrderManagement = () => {
                           {/* Status History */}
                           {order.statusHistory && order.statusHistory.length > 0 && (
                             <div className="mt-6">
-                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Status History</h4>
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Riwayat Status</h4>
                               <div className="space-y-2 max-h-32 overflow-y-auto">
                                 {order.statusHistory.slice().reverse().map((history, historyIndex) => (
                                   <div key={historyIndex} className="flex justify-between items-start text-xs text-gray-600 bg-white p-2 rounded">
@@ -541,7 +550,7 @@ const AdminOrderManagement = () => {
                                     </div>
                                     <div className="text-right">
                                       <div>{formatDate(history.timestamp)}</div>
-                                      <div className="text-gray-400">by {history.updatedBy}</div>
+                                      <div className="text-gray-400">oleh {history.updatedBy}</div>
                                     </div>
                                   </div>
                                 ))}
@@ -551,15 +560,17 @@ const AdminOrderManagement = () => {
 
                           {/* Action Buttons */}
                           <div className="mt-4 flex space-x-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedOrder(selectedOrder === order.id ? null : order.id);
-                              }}
-                              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-                            >
-                              {selectedOrder === order.id ? 'Cancel Update' : 'Update Status'}
-                            </button>
+                            {order.status !== 'cancelled' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedOrder(selectedOrder === order.id ? null : order.id);
+                                }}
+                                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                              >
+                                {selectedOrder === order.id ? 'Batal Update' : 'Update Status'}
+                              </button>
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -570,27 +581,27 @@ const AdminOrderManagement = () => {
                                   ? 'bg-orange-600 hover:bg-orange-700' 
                                   : 'bg-red-600 hover:bg-red-700'
                               } text-white`}
-                              title={isCompleted ? 'Delete (Stock will NOT be restored)' : 'Delete (Stock will be restored)'}
+                              title={isCompleted ? 'Hapus (Stok tidak akan dikembalikan)' : 'Hapus (Stok akan dikembalikan)'}
                             >
-                              {isCompleted ? 'Delete (No Stock Restore)' : 'Delete'}
+                              {isCompleted ? 'Hapus (Tanpa Kembalikan Stok)' : 'Hapus'}
                             </button>
                           </div>
 
                           {/* Update Status Form */}
-                          {selectedOrder === order.id && (
+                          {selectedOrder === order.id && order.status !== 'cancelled' && (
                             <div className="mt-4 p-4 bg-white rounded border">
-                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Update Order Status</h4>
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Update Status Pesanan</h4>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    New Status
+                                    Status Baru
                                   </label>
                                   <select
                                     value={newStatus}
                                     onChange={(e) => setNewStatus(e.target.value)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-xs"
                                   >
-                                    <option value="">Select Status</option>
+                                    <option value="">Pilih Status</option>
                                     {Object.entries(orderStatuses).map(([key, status]) => (
                                       <option key={key} value={key}>{status.label}</option>
                                     ))}
@@ -598,13 +609,13 @@ const AdminOrderManagement = () => {
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Note (Optional)
+                                    Catatan (Opsional)
                                   </label>
                                   <input
                                     type="text"
                                     value={statusNote}
                                     onChange={(e) => setStatusNote(e.target.value)}
-                                    placeholder="Add a note..."
+                                    placeholder="Tambahkan catatan..."
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-xs"
                                   />
                                 </div>
@@ -614,13 +625,13 @@ const AdminOrderManagement = () => {
                                     disabled={!newStatus || loading}
                                     className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 text-xs"
                                   >
-                                    {loading ? 'Updating...' : 'Update Status'}
+                                    {loading ? 'Mengupdate...' : 'Update Status'}
                                   </button>
                                 </div>
                               </div>
                               {newStatus === 'cancelled' && (
                                 <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                                  ⚠️ Changing to cancelled will restore stock for all items in this order
+                                  ⚠️ Mengubah ke status dibatalkan akan mengembalikan stok untuk semua item dalam pesanan ini
                                 </div>
                               )}
                             </div>
@@ -637,7 +648,7 @@ const AdminOrderManagement = () => {
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between">
                 <div className="flex items-center text-sm text-gray-500">
-                  Page {currentPage} of {totalPages}
+                  Halaman {currentPage} dari {totalPages}
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -647,12 +658,12 @@ const AdminOrderManagement = () => {
                     disabled={currentPage === 1}
                     className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    Previous
+                    Sebelumnya
                   </button>
 
                   {/* Page Numbers */}
                   <div className="flex items-center space-x-1">
-                    {generatePageNumbers().map((page, index) => (
+                    {generatePageNumbers().map((page, index) =>
                       page === '...' ? (
                         <span key={index} className="px-3 py-2 text-sm text-gray-500">
                           ...
@@ -670,7 +681,7 @@ const AdminOrderManagement = () => {
                           {page}
                         </button>
                       )
-                    ))}
+                    )}
                   </div>
 
                   {/* Next Button */}
@@ -679,7 +690,7 @@ const AdminOrderManagement = () => {
                     disabled={currentPage === totalPages}
                     className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    Next
+                    Selanjutnya
                   </button>
                 </div>
               </div>
@@ -687,6 +698,9 @@ const AdminOrderManagement = () => {
           </>
         )}
       </div>
+      
+      {/* Alert Container */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
     </div>
   );
 };

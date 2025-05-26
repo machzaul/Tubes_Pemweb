@@ -346,6 +346,7 @@ const Checkout = () => {
 
       // Clear cart from localStorage
       localStorage.removeItem("cart");
+      window.dispatchEvent(new Event("cartUpdated"));
       
       // Show success alert with order ID
       handleOrderSuccess(createdOrder.orderId || generatedOrderId);

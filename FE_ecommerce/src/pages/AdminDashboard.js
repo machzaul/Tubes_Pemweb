@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import LogoutButton from '../components/LogoutButton';
+import AlertContainer from '../components/ui/AlertContainer';
+import useAlert from '../hooks/useAlert';
+import Rupiah from "../components/Rupiah";
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
+
+  // Menggunakan custom alert hook
+  const { alerts, removeAlert, showSuccess, showError, showWarning, showInfo } = useAlert();
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:6543';
 
@@ -27,9 +33,24 @@ const AdminDashboard = () => {
       
       const data = await response.json();
       setProducts(data.products || []);
+      
+      // Tampilkan alert sukses memuat produk
+      if (data.products && data.products.length > 0) {
+        showInfo(
+          `Berhasil memuat ${data.products.length} produk`,
+          "Data Dimuat"
+        );
+      }
     } catch (err) {
       console.error('Error fetching products:', err);
-      setError('Failed to load products. Please check your connection and try again.');
+      const errorMessage = 'Gagal memuat produk. Silakan periksa koneksi internet dan coba lagi.';
+      setError(errorMessage);
+      
+      // Tampilkan alert error
+      showError(
+        errorMessage,
+        "Gagal Memuat Data"
+      );
     } finally {
       setLoading(false);
     }
@@ -41,7 +62,11 @@ const AdminDashboard = () => {
   );
 
   const deleteProduct = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    // Cari nama produk untuk konfirmasi
+    const product = products.find(p => p.id === id);
+    const productName = product ? product.title : 'produk ini';
+    
+    if (window.confirm(`Apakah Anda yakin ingin menghapus "${productName}"? Tindakan ini tidak dapat dibatalkan.`)) {
       try {
         const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
           method: 'DELETE',
@@ -57,11 +82,19 @@ const AdminDashboard = () => {
         // Remove the product from local state
         setProducts(prevProducts => prevProducts.filter(product => product.id !== id));
         
-        // Show success message
-        alert('Product deleted successfully!');
+        // Tampilkan alert sukses
+        showSuccess(
+          `Produk "${productName}" berhasil dihapus dari sistem`,
+          "Produk Dihapus"
+        );
       } catch (err) {
         console.error('Error deleting product:', err);
-        alert('Failed to delete product. Please try again.');
+        
+        // Tampilkan alert error
+        showError(
+          `Gagal menghapus produk "${productName}". Silakan coba lagi.`,
+          "Gagal Menghapus"
+        );
       }
     }
   };
@@ -72,12 +105,18 @@ const AdminDashboard = () => {
     return "text-green-500";
   };
 
+  // Fungsi untuk retry memuat data
+  const handleRetry = () => {
+    showInfo("Mencoba memuat ulang data produk...", "Memuat Ulang");
+    fetchProducts();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-500 border-solid border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading products...</p>
+          <p className="mt-4 text-gray-600">Memuat produk...</p>
         </div>
       </div>
     );
@@ -95,22 +134,24 @@ const AdminDashboard = () => {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <h3 className="text-sm font-medium text-red-800">Terjadi Kesalahan</h3>
                 <div className="mt-2 text-sm text-red-700">
                   <p>{error}</p>
                 </div>
                 <div className="mt-4">
                   <button
-                    onClick={fetchProducts}
+                    onClick={handleRetry}
                     className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 transition-colors"
                   >
-                    Try Again
+                    Coba Lagi
                   </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        {/* Alert Container untuk error state juga */}
+        <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
       </div>
     );
   }
@@ -122,32 +163,34 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
               <p className="text-sm text-gray-500 mt-1">
-                Manage your products and inventory
+                Kelola produk dan inventori Anda
               </p>
             </div>
             <div className="flex space-x-4">
               <Link
                 to="/adminorder"
                 className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                onClick={() => showInfo("Membuka halaman kelola pesanan", "Navigasi")}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Manage Orders
+                Kelola Pesanan
               </Link>
               <Link
                 to="/admin/add-product"
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+                onClick={() => showInfo("Membuka halaman tambah produk", "Navigasi")}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Add Product
+                Tambah Produk
               </Link>
               <LogoutButton className="bg-red-900 hover:bg-red-600 text-white px-4 py-2 rounded">
-                Logout
+                Keluar
               </LogoutButton>
             </div>
           </div>
@@ -168,7 +211,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Products</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Total Produk</dt>
                     <dd className="text-lg font-medium text-gray-900">{products.length}</dd>
                   </dl>
                 </div>
@@ -186,7 +229,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">In Stock</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Tersedia</dt>
                     <dd className="text-lg font-medium text-gray-900">
                       {products.filter(p => p.stock > 0).length}
                     </dd>
@@ -206,7 +249,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Low Stock</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Stok Rendah</dt>
                     <dd className="text-lg font-medium text-gray-900">
                       {products.filter(p => p.stock <= 10 && p.stock > 0).length}
                     </dd>
@@ -226,7 +269,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Out of Stock</dt>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Stok Habis</dt>
                     <dd className="text-lg font-medium text-gray-900">
                       {products.filter(p => p.stock === 0).length}
                     </dd>
@@ -241,7 +284,7 @@ const AdminDashboard = () => {
           {/* Table Header */}
           <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">Product Inventory</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Inventori Produk</h2>
               <div className="relative max-w-xs w-md mt-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +293,7 @@ const AdminDashboard = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Cari produk..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-1.5 border border-gray-500 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -258,10 +301,10 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="grid grid-cols-12 gap-4 text-sm font-semibold text-gray-600 uppercase tracking-wider mt-4">
-              <div className="col-span-5">PRODUCT</div>
-              <div className="col-span-2 text-center">PRICE</div>
-              <div className="col-span-2 text-center">STOCK</div>
-              <div className="col-span-3 text-center">ACTIONS</div>
+              <div className="col-span-5">PRODUK</div>
+              <div className="col-span-2 text-center">HARGA</div>
+              <div className="col-span-2 text-center">STOK</div>
+              <div className="col-span-3 text-center">AKSI</div>
             </div>
           </div>
 
@@ -272,19 +315,30 @@ const AdminDashboard = () => {
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-2-2m0 0l-2 2m2-2v6m-4 6l2 2m0 0l2-2m-2 2V15" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
-                <p className="mt-1 text-sm text-gray-500">Get started by creating your first product.</p>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Tidak ada produk ditemukan</h3>
+                <p className="mt-1 text-sm text-gray-500">Mulai dengan membuat produk pertama Anda.</p>
                 <div className="mt-6">
                   <Link
                     to="/admin/add-product"
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+                    onClick={() => showInfo("Membuka halaman tambah produk pertama", "Mulai")}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Add Your First Product
+                    Tambah Produk Pertama
                   </Link>
                 </div>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Tidak ditemukan</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Tidak ada produk yang cocok dengan pencarian "{searchTerm}".
+                </p>
               </div>
             ) : (
               filteredProducts.map((product) => (
@@ -315,7 +369,7 @@ const AdminDashboard = () => {
                     {/* Price */}
                     <div className="col-span-2 text-center">
                       <span className="text-lg font-semibold text-gray-900">
-                        RP.{product.price}
+                        <Rupiah value={product.price.toLocaleString('id-ID')}/>
                       </span>
                     </div>
 
@@ -325,10 +379,10 @@ const AdminDashboard = () => {
                         {product.stock}
                       </span>
                       {product.stock <= 10 && product.stock > 0 && (
-                        <div className="text-xs text-red-500 mt-1">Low Stock</div>
+                        <div className="text-xs text-red-500 mt-1">Stok Rendah</div>
                       )}
                       {product.stock === 0 && (
-                        <div className="text-xs text-red-500 mt-1">Out of Stock</div>
+                        <div className="text-xs text-red-500 mt-1">Stok Habis</div>
                       )}
                     </div>
 
@@ -337,7 +391,8 @@ const AdminDashboard = () => {
                       <Link
                         to={`/admin/edit-product/${product.id}`}
                         className="inline-flex items-center p-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                        title="Edit Product"
+                        title="Edit Produk"
+                        onClick={() => showInfo(`Membuka editor untuk "${product.title}"`, "Edit Produk")}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -346,7 +401,7 @@ const AdminDashboard = () => {
                       <button
                         onClick={() => deleteProduct(product.id)}
                         className="inline-flex items-center p-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 transition-colors"
-                        title="Delete Product"
+                        title="Hapus Produk"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -360,6 +415,9 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Alert Container - Posisi tetap di kanan bawah */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
     </div>
   );
 };

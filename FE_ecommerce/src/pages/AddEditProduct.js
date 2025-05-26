@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useAlert from "../hooks/useAlert";
+import AlertContainer from "../components/ui/AlertContainer";
 
 const AddEditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  
+  // Initialize alert hook
+  const { alerts, removeAlert, showSuccess, showError, showWarning } = useAlert();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -56,8 +61,6 @@ const AddEditProduct = () => {
     }
   };
 
-
-
   useEffect(() => {
     if (isEdit) {
       fetchProduct();
@@ -76,8 +79,8 @@ const AddEditProduct = () => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          alert("Product not found");
-          navigate("/adminDashboard");
+          showError("Product not found", "Error");
+          setTimeout(() => navigate("/adminDashboard"), 2000);
           return;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -93,8 +96,8 @@ const AddEditProduct = () => {
       });
     } catch (error) {
       console.error("Error fetching product:", error);
-      alert("Error loading product data. Please try again.");
-      navigate("/adminDashboard");
+      showError("Error loading product data. Please try again.", "Loading Error");
+      setTimeout(() => navigate("/adminDashboard"), 2000);
     } finally {
       setFetchingProduct(false);
     }
@@ -146,6 +149,12 @@ const AddEditProduct = () => {
     }
 
     setErrors(newErrors);
+    
+    // Show validation errors using custom alert
+    if (Object.keys(newErrors).length > 0) {
+      showError("Please fix the validation errors before submitting.", "Validation Error");
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -219,11 +228,16 @@ const AddEditProduct = () => {
       const result = await response.json();
       console.log('Product saved successfully:', result);
       
-      // Show success message
-      alert(isEdit ? "Product updated successfully!" : "Product created successfully!");
+      // Show success message using custom alert
+      showSuccess(
+        `Product ${isEdit ? 'updated' : 'created'} successfully! Redirecting to dashboard...`,
+        "Success!"
+      );
       
-      // Navigate back to admin dashboard
-      navigate("/adminDashboard");
+      // Navigate back to admin dashboard with delay
+      setTimeout(() => {
+        navigate("/adminDashboard");
+      }, 2000);
       
     } catch (error) {
       console.error("Error saving product:", error);
@@ -232,7 +246,12 @@ const AddEditProduct = () => {
         message: error.message,
         stack: error.stack
       });
-      alert(`Error ${isEdit ? 'updating' : 'creating'} product: ${error.message}`);
+      
+      // Show error using custom alert
+      showError(
+        `Error ${isEdit ? 'updating' : 'creating'} product: ${error.message}`,
+        "Operation Failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -339,7 +358,6 @@ const AddEditProduct = () => {
                 )}
               </div>
 
-
               <div>
                 <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
                   Stock Quantity *
@@ -430,6 +448,9 @@ const AddEditProduct = () => {
           </form>
         </div>
       </div>
+
+      {/* Alert Container */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
     </div>
   );
 };

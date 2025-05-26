@@ -140,6 +140,13 @@ def update_order_status(request):
         if not new_status:
             return Response(json.dumps({'error': 'Status is required'}), status=400, content_type='application/json; charset=UTF-8')
         
+        # Restore stock if status is being changed to cancelled
+        if new_status == 'cancelled' and order.status != 'cancelled':
+            for order_item in order.order_items:
+                product = order_item.product
+                if product:
+                    product.stock += order_item.quantity
+
         # Update status
         order.status = new_status
         
@@ -159,6 +166,7 @@ def update_order_status(request):
         
     except (ValueError, KeyError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+
     
 
 @view_config(route_name='order_status', request_method='OPTIONS', renderer='json')
@@ -169,24 +177,36 @@ def order_status_options(request):
 
 @view_config(route_name='order', request_method='DELETE', renderer='json')
 def delete_order(request):
-    """Delete order and restore stock"""
+    """Delete order and optionally restore stock if NOT cancelled"""
     try:
         order_id = int(request.matchdict['id'])
         order = request.dbsession.query(Order).filter(Order.id == order_id).first()
         if not order:
             return Response(json.dumps({'error': 'Order not found'}), status=404, content_type='application/json; charset=UTF-8')
-        
-        # Restore stock for each order item before deleting
-        for order_item in order.order_items:
-            product = order_item.product
-            if product:
-                product.stock += order_item.quantity
-        
+
+        # Aman dari error ketika tidak ada body
+        try:
+            data = request.json_body
+        except Exception:
+            data = {}
+
+        restore_stock = data.get('restoreStock', False)
+
+        # Cegah pengembalian stok kalau order sudah cancelled
+        if restore_stock and order.status != 'cancelled':
+            for order_item in order.order_items:
+                product = order_item.product
+                if product:
+                    product.stock += order_item.quantity
+
         request.dbsession.delete(order)
-        return {'message': 'Order deleted successfully and stock restored'}
-        
+        return {
+            'message': f"Order deleted successfully{' and stock restored' if restore_stock and order.status != 'cancelled' else ' (stock not restored)'}"
+        }
+
     except (ValueError, SQLAlchemyError) as e:
         return Response(json.dumps({'error': str(e)}), status=400, content_type='application/json; charset=UTF-8')
+
     
 
 @view_config(route_name='order', request_method='OPTIONS', renderer='json')
