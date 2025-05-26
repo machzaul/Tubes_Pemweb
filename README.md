@@ -1,4 +1,20 @@
-markdown# MachzaulMart - E-commerce Platform
+## markdown# MachzaulMart - E-commerce Platform
+<p align="center">
+  <img src="screenshoot/halaman_home.png" alt="Project Banner" width="100%"/>
+</p>
+
+<h1 align="center">🚀 Nama Proyek Kamu</h1>
+<p align="center">
+  <em>Aplikasi modern yang dibangun untuk menyelesaikan [tujuan atau masalah proyek].</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge" alt="Build Status"/>
+  <img src="https://img.shields.io/badge/Test-Covered-blue?style=for-the-badge" alt="Test Status"/>
+  <img src="https://img.shields.io/badge/Made%20with-Love-red?style=for-the-badge" alt="Made With Love"/>
+</p>
+
+---
 
 ![MachzaulMart](https://img.shields.io/badge/MachzaulMart-E--commerce-8B5CF6?style=for-the-badge&logo=shopping-cart)
 ![React](https://img.shields.io/badge/React-18.0+-61DAFB?style=for-the-badge&logo=react)
@@ -294,6 +310,7 @@ RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
+```
 Contributing
 We welcome contributions from the community. Please follow these steps:
 
@@ -393,11 +410,6 @@ Beta Testers - For valuable feedback and testing
 Early Adopters - For trusting our platform
 
 
-<div align="center">
-  <sub>Built with precision by the Machzaul Harmansyah</sub>
-</div>
-```
-
 ## Screenshot Aplikasi
 
 | Halaman Home | Halaman About |
@@ -417,6 +429,21 @@ Early Adopters - For trusting our platform
 | ![Lacak](screenshoot/halaman_lacak.png) |
 
 
+## 📦 Unit Testing
+
+Sebagai bagian dari proses pengembangan, kami telah melakukan **unit testing** untuk memastikan bahwa setiap fungsi berjalan sesuai dengan yang diharapkan.
+
+### ✅ Hasil Unit Testing
+
+Berikut ini adalah hasil dari unit testing yang telah dilakukan:
+
+![Hasil Unit Testing](screenshoot/Unittesting.png)
+
+Gambar di atas menunjukkan bahwa semua pengujian berhasil dijalankan tanpa error atau kegagalan. Hal ini menandakan bahwa fungsi-fungsi utama pada aplikasi telah berjalan dengan baik pada tahap pengujian ini dan terdapat 3 failed saat menggunakan data dummy yang berbeda dengan type content.
+
+---
+
+> 📌 Catatan: Jika terjadi perubahan pada fitur atau fungsi utama, disarankan untuk menjalankan kembali unit test untuk memastikan kestabilan aplikasi tetap terjaga.
 
 
 
