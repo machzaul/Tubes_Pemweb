@@ -1,11 +1,13 @@
 <p align="center">
   <img src="screenshoot/halaman_home.png" alt="Project Banner" width="100%"/>
 </p>
+
 <h1 align="center">MachzaulMart - E-commerce Platform</h1>
 <p align="center">
   <em>Tinggal Klik, Langsung Datang!</em>
 </p>
 ---
+
 ![MachzaulMart](https://img.shields.io/badge/MachzaulMart-E--commerce-8B5CF6?style=for-the-badge&logo=shopping-cart)
 ![React](https://img.shields.io/badge/React-18.0+-61DAFB?style=for-the-badge&logo=react)
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python)
@@ -433,14 +435,11 @@ Gambar di atas menunjukkan bahwa semua pengujian berhasil dijalankan tanpa error
 
 ---
 
-> 📌 Catatan: Jika terjadi perubahan pada fitur atau fungsi utama, disarankan untuk menjalankan kembali unit test untuk memastikan kestabilan aplikasi tetap terjaga.
-
-
 
 
 
 <div align="center">
 🛍️ MachzaulMart - Transformasi Belanja Global
-Dibuat dengan ❤️ oleh Tim MachzaulMart
+Dibuat oleh Machzaul Harmansyah
 🚀 Live Demo | 📚 Documentation | 🐛 Report Bug
 </div>
