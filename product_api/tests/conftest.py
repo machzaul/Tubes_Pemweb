@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pyramid import testing
 from pyramid.testing import DummyRequest
+from webtest import TestApp
 
 # Add the project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -52,13 +53,67 @@ def config():
 
 @pytest.fixture
 def dummy_request(dbsession):
-    """Create a dummy request with database session"""
+    """Create a complete dummy request with all needed attributes"""
     request = DummyRequest()
     request.dbsession = dbsession
     request.json_body = {}
     request.headers = {}
     request.matchdict = {}
+    
+    # Add missing attributes that are required by the views
+    request.content_type = 'application/json'
+    request.method = 'GET'
+    request.path = '/'
+    request.url = 'http://localhost/'
+    request.remote_addr = '127.0.0.1'
+    request.scheme = 'http'
+    request.host = 'localhost'
+    request.port = 80
+    
     return request
+
+@pytest.fixture  
+def app_request(dbsession):
+    """Create app request for view testing"""
+    config = testing.setUp()
+    request = testing.DummyRequest()
+    request.dbsession = dbsession
+    request.json_body = {}
+    request.headers = {}
+    request.matchdict = {}
+    request.content_type = 'application/json'
+    request.method = 'GET'
+    request.path = '/'
+    request.url = 'http://localhost/'
+    request.remote_addr = '127.0.0.1'
+    
+    return request
+
+@pytest.fixture
+def testapp(dbsession):
+    """Create WebTest TestApp for functional testing"""
+    from product_api import main
+    
+    # Setup basic config with proper database URL
+    settings = {
+        'sqlalchemy.url': 'sqlite:///:memory:',
+        'pyramid.default_locale_name': 'en',
+        'pyramid.includes': [
+            'pyramid_tm',
+        ],
+    }
+    
+    # Create the WSGI application
+    app = main({}, **settings)
+    
+    # Create test app
+    testapp = TestApp(app)
+    
+    # Setup database tables
+    engine = create_engine('sqlite:///:memory:')
+    Base.metadata.create_all(engine)
+    
+    return testapp
 
 # Test data factories
 @pytest.fixture
@@ -148,54 +203,3 @@ def multiple_products(dbsession):
 def jwt_secret():
     """JWT secret for testing"""
     return "test-secret-key-for-jwt-tokens"
-
-import pytest
-from pyramid import testing
-from pyramid.testing import DummyRequest
-from webtest import TestApp
-
-@pytest.fixture
-def dummy_request(dbsession):
-    """Create a complete dummy request with all needed attributes"""
-    request = DummyRequest()
-    request.dbsession = dbsession
-    request.json_body = {}
-    request.headers = {}
-    request.matchdict = {}
-    
-    # Tambahkan attributes yang missing
-    request.content_type = 'application/json'
-    request.method = 'GET'
-    request.path = '/'
-    request.url = 'http://localhost/'
-    request.remote_addr = '127.0.0.1'
-    
-    return request
-
-@pytest.fixture
-def testapp(config, dbsession):
-    """Create WebTest TestApp for functional testing"""
-    from product_api import main
-    
-    # Setup basic config
-    settings = {
-        'sqlalchemy.url': 'sqlite:///:memory:',
-    }
-    
-    app = main({}, **settings)
-    app.registry.dbsession = dbsession
-    
-    return TestApp(app)
-
-@pytest.fixture  
-def app_request(dbsession):
-    """Create app request for view testing"""
-    config = testing.setUp()
-    request = testing.DummyRequest()
-    request.dbsession = dbsession
-    request.json_body = {}
-    request.headers = {}
-    request.matchdict = {}
-    request.content_type = 'application/json'
-    
-    return request
