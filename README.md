@@ -518,53 +518,21 @@ Terima kasih kepada semua pihak yang berkontribusi:
 
 ## Screenshot Aplikasi
 
-<div align="center">
-
-### Halaman Home
-<img src="screenshot/halaman_home.png" alt="Halaman Home" width="600">
-
-### Halaman About  
-<img src="screenshot/halaman_about.png" alt="Halaman About" width="600">
-
-### Halaman Dashboard
-<img src="screenshot/halaman_dasboard.png" alt="Halaman Dashboard" width="600">
-
-### Halaman Produk
-<img src="screenshot/halaman_produk.png" alt="Halaman Produk" width="600">
-
-### Halaman Kontak
-<img src="screenshot/halaman_kontak.png" alt="Halaman Kontak" width="600">
-
-### Halaman Checkout
-<img src="screenshot/halaman_checkout.png" alt="Halaman Checkout" width="600">
-
-### Halaman Lacak
-<img src="screenshot/halaman_lacak.png" alt="Halaman Lacak" width="600">
-
-</div>
-Atau format grid 2 kolom:
-
-markdown
-# Nama Project
-
-## Screenshot Aplikasi
-
 | Halaman Home | Halaman About |
 |:---:|:---:|
-| ![Home](screenshot/halaman_home.png) | ![About](screenshot/halaman_about.png) |
+| ![Home](screenshoot/halaman_home.png) | ![About](screenshoot/halaman_about.png) |
 
 | Halaman Dashboard | Halaman Produk |
 |:---:|:---:|
-| ![Dashboard](screenshot/halaman_dasboard.png) | ![Produk](screenshot/halaman_produk.png) |
+| ![Dashboard](screenshoot/halaman_dasboard.png) | ![Produk](screenshoot/halaman_produk.png) |
 
 | Halaman Kontak | Halaman Checkout |
 |:---:|:---:|
-| ![Kontak](screenshot/halaman_kontak.png) | ![Checkout](screenshot/halaman_checkout.png) |
+| ![Kontak](screenshoot/halaman_kontak.png) | ![Checkout](screenshoot/halaman_checkout.png) |
 
 | Halaman Lacak |
 |:---:|
-| ![Lacak](screenshot/halaman_lacak.png) |
-Pilih format yang sesuai dengan kebutuhan tampilan README Anda!
+| ![Lacak](screenshoot/halaman_lacak.png) |
 
 
 
