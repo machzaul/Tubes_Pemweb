@@ -3,17 +3,10 @@
   <img src="screenshoot/halaman_home.png" alt="Project Banner" width="100%"/>
 </p>
 
-<h1 align="center">🚀 Nama Proyek Kamu</h1>
+<h1 align="center">Machzaul Mart</h1>
 <p align="center">
-  <em>Aplikasi modern yang dibangun untuk menyelesaikan [tujuan atau masalah proyek].</em>
+  <em>Tinggal Klik, Langsung Datang!</em>
 </p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge" alt="Build Status"/>
-  <img src="https://img.shields.io/badge/Test-Covered-blue?style=for-the-badge" alt="Test Status"/>
-  <img src="https://img.shields.io/badge/Made%20with-Love-red?style=for-the-badge" alt="Made With Love"/>
-</p>
-
 ---
 
 ![MachzaulMart](https://img.shields.io/badge/MachzaulMart-E--commerce-8B5CF6?style=for-the-badge&logo=shopping-cart)
