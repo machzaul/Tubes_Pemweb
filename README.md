@@ -55,10 +55,10 @@ Pastikan sistem Anda telah terinstall:
 git clone https://github.com/yourusername/machzaulmart.git
 
 # Navigate to project directory
-cd machzaulmart
+cd Tubes Pemweb
 2. Backend Setup (Python Pyramid)
 bash# Navigate to backend directory
-cd backend
+cd Product_api
 
 # Create virtual environment
 python -m venv venv
@@ -96,10 +96,10 @@ npm install
 npm start
 ✅ Frontend akan berjalan di: http://localhost:3000
 📁 Project Structure
-machzaulmart/
+tubes pemweb/
 │
-├── 📁 backend/                    # Python Pyramid Backend
-│   ├── 📁 machzaulmart/
+├── 📁 product_api/                    # Python Pyramid Backend
+│   ├── 📁 product_api/
 │   │   ├── 📁 models/            # Database Models
 │   │   ├── 📁 views/             # API Views/Controllers
 │   │   ├── 📁 static/            # Static Files
@@ -109,7 +109,7 @@ machzaulmart/
 │   ├── 📄 development.ini       # Development Config
 │   └── 📄 production.ini        # Production Config
 │
-├── 📁 frontend/                   # React Frontend
+├── 📁 FE_ecommerce/                   # React Frontend
 │   ├── 📁 public/               # Public Assets
 │   ├── 📁 src/
 │   │   ├── 📁 components/       # React Components
@@ -323,41 +323,51 @@ Orders API
 MethodEndpointDescriptionAuth RequiredGET/api/ordersGet all orders✅ AdminGET/api/orders/{id}Get order details✅POST/api/ordersCreate new order❌PUT/api/orders/{id}Update order status✅ Admin
 Sample API Responses
 json// GET /api/products
-{
-  "success": true,
-  "data": {
-    "products": [
-      {
-        "id": 1,
-        "name": "Bitcoin",
-        "description": "melelit pasti kaya",
-        "price": 3000000,
-        "stock": 10,
-        "image_url": "/static/images/bitcoin.jpg",
-        "created_at": "2025-05-26T10:00:00Z"
-      }
-    ],
-    "total": 1,
-    "page": 1,
-    "per_page": 10
-  }
-}
-json// POST /api/orders
-{
-  "success": true,
-  "data": {
-    "order_id": "47722553-ptry25hjf",
-    "status": "pending",
-    "total": 8000000,
-    "items": [
-      {
-        "product_id": 1,
-        "quantity": 2,
-        "price": 3000000
-      }
-    ]
-  }
-}
+        {
+            "id": 38,
+            "orderId": "46998052-fperj7eh1",
+            "customerInfo": {
+                "id": 38,
+                "fullName": "jadull baru ku cekout",
+                "email": "admin@gmail.com",
+                "address": "JORONG PASAR MUARA",
+                "phoneNumber": "+6282178901234",
+                "createdAt": "2025-05-26T15:09:58.055741",
+                "updatedAt": "2025-05-26T15:09:58.055741"
+            },
+            "items": [
+                {
+                    "id": 55,
+                    "productId": 12,
+                    "product": {
+                        "id": 12,
+                        "title": "Celana Levis",
+                        "description": "Celana Panjang yang enak dibawa kemana saja",
+                        "price": 100000.0,
+                        "stock": 11,
+                        "image": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                    },
+                    "quantity": 1,
+                    "price": 100000.0
+                }
+            ],
+            "subtotal": 100000.0,
+            "shipping": 0,
+            "total": 100000.0,
+            "status": "pending",
+            "statusHistory": [
+                {
+                    "status": "pending",
+                    "timestamp": "2025-05-26T08:09:58.052Z",
+                    "updatedBy": "system",
+                    "note": "Order placed by customer"
+                }
+            ],
+            "orderDate": "2025-05-26T15:09:58.057618",
+            "createdAt": "2025-05-26T15:09:58.055741",
+            "updatedAt": "2025-05-26T15:09:58.055741"
+        }
+
 🤝 Contributing
 Kami menyambut kontribusi dari developer manapun! Berikut cara berkontribusi:
 1. Fork & Clone
@@ -497,12 +507,61 @@ Terima kasih kepada semua pihak yang berkontribusi:
 👥 Beta Testers - Untuk feedback dan testing
 🎯 Early Adopters - Untuk kepercayaan menggunakan platform kami
 
-📊 Project Stats
-Show Image
-Show Image
-Show Image
-Show Image
-Show Image
+## Screenshot Aplikasi
+
+<div align="center">
+
+### Halaman Home
+<img src="screenshot/halaman_home.png" alt="Halaman Home" width="600">
+
+### Halaman About  
+<img src="screenshot/halaman_about.png" alt="Halaman About" width="600">
+
+### Halaman Dashboard
+<img src="screenshot/halaman_dasboard.png" alt="Halaman Dashboard" width="600">
+
+### Halaman Produk
+<img src="screenshot/halaman_produk.png" alt="Halaman Produk" width="600">
+
+### Halaman Kontak
+<img src="screenshot/halaman_kontak.png" alt="Halaman Kontak" width="600">
+
+### Halaman Checkout
+<img src="screenshot/halaman_checkout.png" alt="Halaman Checkout" width="600">
+
+### Halaman Lacak
+<img src="screenshot/halaman_lacak.png" alt="Halaman Lacak" width="600">
+
+</div>
+Atau format grid 2 kolom:
+
+markdown
+# Nama Project
+
+## Screenshot Aplikasi
+
+| Halaman Home | Halaman About |
+|:---:|:---:|
+| ![Home](screenshot/halaman_home.png) | ![About](screenshot/halaman_about.png) |
+
+| Halaman Dashboard | Halaman Produk |
+|:---:|:---:|
+| ![Dashboard](screenshot/halaman_dasboard.png) | ![Produk](screenshot/halaman_produk.png) |
+
+| Halaman Kontak | Halaman Checkout |
+|:---:|:---:|
+| ![Kontak](screenshot/halaman_kontak.png) | ![Checkout](screenshot/halaman_checkout.png) |
+
+| Halaman Lacak |
+|:---:|
+| ![Lacak](screenshot/halaman_lacak.png) |
+Pilih format yang sesuai dengan kebutuhan tampilan README Anda!
+
+
+
+
+
+
 
 <div align="center">
 🛍️ MachzaulMart - Transformasi Belanja Global
