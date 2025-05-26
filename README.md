@@ -55,444 +55,320 @@ Pastikan sistem Anda telah terinstall:
 
 ## 🔧 Installation
 
-### 1. Clone Repository
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Backend** | Python Pyramid | RESTful API & Business Logic |
+| **Frontend** | React + Tailwind CSS | User Interface |
+| **Database** | SQLite/PostgreSQL | Data Storage |
+| **Authentication** | JWT | Secure User Sessions |
+
+## Quick Start
+
+Get the project running locally in under 5 minutes:
 
 ```bash
-# Clone the repository
+# Clone repository
 git clone https://github.com/machzaul/Tubes_Pemweb.git
+cd "Tubes Pemweb"
 
-# Navigate to project directory
-cd Tubes Pemweb
-2. Backend Setup (Python Pyramid)
-bash# Navigate to backend directory
+# Start backend (Terminal 1)
 cd Product_api
-
-# Create virtual environment
 python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+python setup.py develop
+initialize_db development.ini
+pserve development.ini --reload
 
-# Activate virtual environment
-# For Windows:
-venv\Scripts\activate
+# Start frontend (Terminal 2)
+cd ../frontend
+npm install
+npm start
+Access Points:
 
-# For macOS/Linux:
+Frontend: http://localhost:3000
+Backend API: http://localhost:6543
+
+Installation
+Prerequisites
+
+Python 3.8+
+Node.js 14+
+PostgreSQL (for production)
+
+Backend Setup
+bashcd Product_api
+
+# Create and activate virtual environment
+python -m venv venv
 source venv/bin/activate
 
-# Upgrade pip
-pip install --upgrade pip
-
 # Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Setup database
+# Setup application
 python setup.py develop
-
-# Initialize database
 initialize_db development.ini
 
-# Run backend server
+# Start development server
 pserve development.ini --reload
-✅ Backend akan berjalan di: http://localhost:6543
-3. Frontend Setup (React + Tailwind)
-bash# Open new terminal and navigate to frontend directory
-cd frontend
+Frontend Setup
+bashcd FE_ecommerce
 
 # Install dependencies
 npm install
 
 # Start development server
 npm start
-✅ Frontend akan berjalan di: http://localhost:3000
-📁 Project Structure
-tubes pemweb/
+Project Structure
+tubes-pemweb/
+├── product_api/                 # Python Pyramid Backend
+│   ├── product_api/
+│   │   ├── models/             # Database Models
+│   │   ├── views/              # API Controllers
+│   │   ├── static/             # Static Assets
+│   │   └── templates/          # HTML Templates
+│   ├── requirements.txt        # Python Dependencies
+│   ├── setup.py               # Package Configuration
+│   └── development.ini        # Development Settings
 │
-├── 📁 product_api/                    # Python Pyramid Backend
-│   ├── 📁 product_api/
-│   │   ├── 📁 models/            # Database Models
-│   │   ├── 📁 views/             # API Views/Controllers
-│   │   ├── 📁 static/            # Static Files
-│   │   └── 📁 templates/         # HTML Templates
-│   ├── 📄 requirements.txt       # Python Dependencies
-│   ├── 📄 setup.py              # Package Setup
-│   ├── 📄 development.ini       # Development Config
-│   └── 📄 production.ini        # Production Config
+├── FE_ecommerce/               # React Frontend
+│   ├── public/                # Static Assets
+│   ├── src/
+│   │   ├── components/        # Reusable Components
+│   │   ├── pages/             # Page Components
+│   │   ├── services/          # API Integration
+│   │   ├── utils/             # Helper Functions
+│   │   └── styles/            # Styling
+│   ├── package.json           # Node Dependencies
+│   └── tailwind.config.js     # Tailwind Configuration
 │
-├── 📁 FE_ecommerce/                   # React Frontend
-│   ├── 📁 public/               # Public Assets
-│   ├── 📁 src/
-│   │   ├── 📁 components/       # React Components
-│   │   │   ├── 📁 admin/        # Admin Components
-│   │   │   ├── 📁 common/       # Shared Components
-│   │   │   └── 📁 customer/     # Customer Components
-│   │   ├── 📁 pages/            # Page Components
-│   │   ├── 📁 utils/            # Utility Functions
-│   │   ├── 📁 hooks/            # Custom Hooks
-│   │   ├── 📁 services/         # API Services
-│   │   └── 📁 styles/           # CSS Styles
-│   ├── 📄 package.json          # Node Dependencies
-│   ├── 📄 tailwind.config.js    # Tailwind Configuration
-│   └── 📄 craco.config.js       # Create React App Config
-│
-├── 📄 README.md                  # Project Documentation
-├── 📄 .gitignore               # Git Ignore Rules
-└── 📄 LICENSE                   # License File
-⚙️ Configuration
-Backend Environment (.env)
-Buat file .env di direktori backend/:
-env# Database Configuration
+└── README.md                   # Documentation
+Configuration
+Backend Environment
+Create .env in the product_api/ directory:
+env# Database
 DATABASE_URL=sqlite:///machzaulmart.db
-# DATABASE_URL=postgresql://user:password@localhost/machzaulmart
 
 # Security
-SECRET_KEY=your-super-secret-key-here-change-in-production
-JWT_SECRET=your-jwt-secret-key
+SECRET_KEY=your-secret-key-here
+JWT_SECRET=your-jwt-secret
 
-# Application Settings
+# Application
 DEBUG=True
 CORS_ORIGINS=http://localhost:3000
 
-# Email Configuration (Optional)
+# Email (Optional)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-Frontend Environment (.env)
-Buat file .env di direktori frontend/:
+SMTP_PASS=your-password
+Frontend Environment
+Create .env in the FE_ecommerce/ directory:
 env# API Configuration
 REACT_APP_API_URL=http://localhost:6543
 REACT_APP_API_VERSION=v1
 
-# Application Settings
+# Application
 REACT_APP_APP_NAME=MachzaulMart
 REACT_APP_APP_VERSION=1.0.0
-
-# Features Flags
-REACT_APP_ENABLE_ANALYTICS=false
-REACT_APP_ENABLE_NOTIFICATIONS=true
-📄 requirements.txt
-txt# Web Framework
-pyramid==2.0.2
-pyramid-chameleon==0.3
-pyramid-debugtoolbar==4.10.1
-
-# Database
+Dependencies
+Backend Requirements:
+txtpyramid==2.0.2
 SQLAlchemy==1.4.46
-alembic==1.9.2
-psycopg2-binary==2.9.5
-
-# WSGI Server
-waitress==2.1.2
-
-# CORS Support
 pyramid-cors==2.0.0
-
-# Authentication & Security
 pyramid-jwt==1.6.1
 bcrypt==4.0.1
+waitress==2.1.2
+Frontend Dependencies:
 
-# HTTP & JSON
-requests==2.28.2
-webob==1.8.7
+React 18+
+Tailwind CSS 3+
+Axios for API calls
+React Router for navigation
 
-# Development Tools
-pyramid-retry==2.1.1
-pyramid-tm==2.5
+API Documentation
+Authentication
+bashPOST /api/auth/login
+Content-Type: application/json
 
-# Utilities
-python-dotenv==0.21.1
-marshmallow==3.19.0
-🗃️ Database Setup
-SQLite (Development)
-bashcd backend
-source venv/bin/activate  # Linux/macOS
-# or
-venv\Scripts\activate     # Windows
-
-# Initialize database
+{
+  "email": "admin",
+  "password": "admin123"
+}
+Products Endpoints
+MethodEndpointDescriptionAuthGET/api/productsList all productsNoGET/api/products/{id}Get product detailsNoPOST/api/productsCreate productAdminPUT/api/products/{id}Update productAdminDELETE/api/products/{id}Delete productAdmin
+Orders Endpoints
+MethodEndpointDescriptionAuthGET/api/ordersList ordersAdminGET/api/orders/{id}Get order detailsYesPOST/api/ordersCreate orderNoPUT/api/orders/{id}Update order statusAdmin
+Sample Response
+json{
+  "id": 38,
+  "orderId": "46998052-fperj7eh1",
+  "customerInfo": {
+    "id": 38,
+    "fullName": "John Doe",
+    "email": "john@example.com",
+    "address": "123 Main Street",
+    "phoneNumber": "+1234567890"
+  },
+  "items": [
+    {
+      "id": 55,
+      "productId": 12,
+      "product": {
+        "id": 12,
+        "title": "Premium Jeans",
+        "description": "High-quality denim jeans",
+        "price": 100000.0,
+        "stock": 11
+      },
+      "quantity": 1,
+      "price": 100000.0
+    }
+  ],
+  "subtotal": 100000.0,
+  "shipping": 0,
+  "total": 100000.0,
+  "status": "pending"
+}
+Development
+Database Setup
+SQLite (Development):
+bashcd Product_api
+source venv/bin/activate
 initialize_db development.ini
-
-# (Optional) Seed sample data
-python scripts/seed_data.py
-PostgreSQL (Production)
+PostgreSQL (Production):
 bash# Install PostgreSQL
-# Ubuntu/Debian:
 sudo apt-get install postgresql postgresql-contrib
-
-# macOS:
-brew install postgresql
 
 # Create database
 sudo -u postgres createdb machzaulmart
 
-# Update .env file with PostgreSQL URL
-# DATABASE_URL=postgresql://username:password@localhost/machzaulmart
-🚀 Deployment
-Production Build
-Backend (Waitress)
-bashcd backend
+# Update DATABASE_URL in .env
+Testing
+Backend Tests:
+bashcd Product_api
 source venv/bin/activate
+pip install pytest pytest-cov
+python -m pytest tests/ -v
+Frontend Tests:
+bashcd FE_ecommerce
+npm test
+npm test -- --coverage --watchAll=false
+Code Quality
 
-# Install production dependencies
+Python: Follow PEP 8 standards
+JavaScript: ESLint configuration included
+Git: Use conventional commit messages
+Documentation: Update README for major changes
+
+Deployment
+Production Build
+Backend (Waitress):
+bashcd Product_api
+source venv/bin/activate
 pip install waitress
-
-# Run with Waitress
-waitress-serve --port=6543 --call machzaulmart:main
-Frontend (Static Build)
-bashcd frontend
-
-# Create production build
+waitress-serve --port=6543 --call product_api:main
+Frontend (Static):
+bashcd FE_ecommerce
 npm run build
-
-# Serve static files (optional)
 npm install -g serve
 serve -s build -l 3000
-Docker Deployment (Optional)
-dockerfile# Dockerfile.backend
+Docker Deployment
+dockerfile# Backend Dockerfile
 FROM python:3.9-slim
 WORKDIR /app
-COPY backend/requirements.txt .
+COPY Product_api/requirements.txt .
 RUN pip install -r requirements.txt
-COPY backend/ .
-CMD ["waitress-serve", "--port=6543", "--call", "machzaulmart:main"]
-dockerfile# Dockerfile.frontend  
+COPY Product_api/ .
+CMD ["waitress-serve", "--port=6543", "--call", "product_api:main"]
+dockerfile# Frontend Dockerfile
 FROM node:16-alpine as build
 WORKDIR /app
-COPY frontend/package*.json ./
+COPY FE_ecommerce/package*.json ./
 RUN npm install
-COPY frontend/ .
+COPY FE_ecommerce/ .
 RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-📱 Screenshots & Features
-🏠 Homepage
+Contributing
+We welcome contributions from the community. Please follow these steps:
 
-Hero section dengan produk unggulan
-Kategori produk yang terorganisir
-Testimoni pelanggan
+Fork the repository
+Create a feature branch: git checkout -b feature/new-feature
+Make your changes and commit: git commit -m "Add new feature"
+Push to your fork: git push origin feature/new-feature
+Submit a pull request
 
-👨‍💼 Admin Dashboard
+Development Guidelines
 
-Overview statistik penjualan
-Manajemen produk (CRUD)
-Monitoring pesanan real-time
-Laporan keuangan
+Write clear, self-documenting code
+Include tests for new features
+Update documentation as needed
+Follow existing code style and conventions
 
-🛒 Shopping Experience
+Troubleshooting
+Common Issues
+Backend Issues:
 
-Katalog produk dengan filter
-Keranjang belanja interaktif
-Checkout process yang streamlined
-Order tracking untuk pelanggan
+ModuleNotFoundError: Run python setup.py develop in backend directory
+Database errors: Reinitialize with initialize_db development.ini
+Port conflicts: Use different port with --port=6544
 
-📱 Responsive Design
+Frontend Issues:
 
-Mobile-first approach
-Tablet optimization
-Desktop full features
+npm install fails: Clear cache with npm cache clean --force
+Tailwind not working: Verify tailwind.config.js configuration
+CORS errors: Check backend CORS settings
 
-🧪 Testing
-Backend Testing
-bashcd backend
-source venv/bin/activate
-
-# Install test dependencies
-pip install pytest pytest-cov
-
-# Run tests
-python -m pytest tests/ -v
-
-# Run with coverage
-python -m pytest tests/ --cov=machzaulmart --cov-report=html
-Frontend Testing
-bashcd frontend
-
-# Run unit tests
-npm test
-
-# Run tests with coverage
-npm test -- --coverage --watchAll=false
-
-# Run e2e tests (if configured)
-npm run test:e2e
-📋 API Documentation
-Authentication
-bash# Login
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "password": "password123"
-}
-Products API
-MethodEndpointDescriptionAuth RequiredGET/api/productsGet all products❌GET/api/products/{id}Get single product❌POST/api/productsCreate product✅ AdminPUT/api/products/{id}Update product✅ AdminDELETE/api/products/{id}Delete product✅ Admin
-Orders API
-MethodEndpointDescriptionAuth RequiredGET/api/ordersGet all orders✅ AdminGET/api/orders/{id}Get order details✅POST/api/ordersCreate new order❌PUT/api/orders/{id}Update order status✅ Admin
-Sample API Responses
-json// GET /api/products
-        {
-            "id": 38,
-            "orderId": "46998052-fperj7eh1",
-            "customerInfo": {
-                "id": 38,
-                "fullName": "jadull baru ku cekout",
-                "email": "admin@gmail.com",
-                "address": "JORONG PASAR MUARA",
-                "phoneNumber": "+6282178901234",
-                "createdAt": "2025-05-26T15:09:58.055741",
-                "updatedAt": "2025-05-26T15:09:58.055741"
-            },
-            "items": [
-                {
-                    "id": 55,
-                    "productId": 12,
-                    "product": {
-                        "id": 12,
-                        "title": "Celana Levis",
-                        "description": "Celana Panjang yang enak dibawa kemana saja",
-                        "price": 100000.0,
-                        "stock": 11,
-                        "image": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                    },
-                    "quantity": 1,
-                    "price": 100000.0
-                }
-            ],
-            "subtotal": 100000.0,
-            "shipping": 0,
-            "total": 100000.0,
-            "status": "pending",
-            "statusHistory": [
-                {
-                    "status": "pending",
-                    "timestamp": "2025-05-26T08:09:58.052Z",
-                    "updatedBy": "system",
-                    "note": "Order placed by customer"
-                }
-            ],
-            "orderDate": "2025-05-26T15:09:58.057618",
-            "createdAt": "2025-05-26T15:09:58.055741",
-            "updatedAt": "2025-05-26T15:09:58.055741"
-        }
-
-🤝 Contributing
-Kami menyambut kontribusi dari developer manapun! Berikut cara berkontribusi:
-1. Fork & Clone
-bash# Fork repository di GitHub
-# Kemudian clone fork Anda
-git clone https://github.com/yourusername/machzaulmart.git
-2. Create Feature Branch
-bash# Buat branch baru untuk fitur
-git checkout -b feature/amazing-feature
-
-# Atau untuk bug fix
-git checkout -b fix/bug-description
-3. Commit Changes
-bash# Add changes
-git add .
-
-# Commit with descriptive message
-git commit -m "Add: amazing new feature
-
-- Implement user authentication
-- Add email verification
-- Update UI components"
-4. Push & Pull Request
-bash# Push ke fork Anda
-git push origin feature/amazing-feature
-
-# Buat Pull Request di GitHub
-Code Style Guidelines
-
-Python: Follow PEP 8
-JavaScript: Use ESLint configuration
-Git Commits: Use conventional commits
-Documentation: Update README untuk perubahan major
-
-🐛 Troubleshooting
-Common Issues & Solutions
-Backend Issues
-❌ ModuleNotFoundError: No module named 'machzaulmart'
-bash# Solution:
-cd backend
-source venv/bin/activate
-python setup.py develop
-❌ Database connection error
-bash# For SQLite:
-rm machzaulmart.db
-initialize_db development.ini
-
-# For PostgreSQL:
-# Check database credentials in .env
-# Ensure PostgreSQL service is running
-❌ Port 6543 already in use
-bash# Find and kill process
-lsof -ti:6543 | xargs kill -9
-
-# Or use different port
-pserve development.ini --reload --port=6544
-Frontend Issues
-❌ npm install fails
-bash# Clear cache and reinstall
-rm -rf node_modules package-lock.json
-npm cache clean --force
-npm install
-❌ Tailwind styles not working
-bash# Ensure Tailwind is properly configured
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-❌ CORS errors in browser
-bash# Check backend CORS configuration
-# Ensure CORS_ORIGINS includes frontend URL
 Debug Mode
-Backend Debug
-bash# Enable debug mode
+Enable debug logging by setting environment variables:
+bash# Backend
 export DEBUG=true
-pserve development.ini --reload
-Frontend Debug
-bash# Start with verbose logging
+
+# Frontend
 REACT_APP_LOG_LEVEL=debug npm start
-
-```
-📞 Support & Contact
-Jika Anda mengalami masalah atau membutuhkan bantuan:
-
-📧 Email: machzaul17@gmail.com
-📱 Phone: +62 856 9450 8422
-💬 WhatsApp: +62 856 9450 8422
-📍 Location: Padang, Indonesia
-🐛 Issues: GitHub Issues
-📖 Docs: Wiki Documentation
-
-Business Hours
-
-Customer Support: 24/7 Response
-Development Support: Mon-Fri, 9AM-5PM (WIB)
-
-📈 Roadmap
+Roadmap
 Version 1.1 (Q3 2025)
 
- Payment Gateway Integration (Midtrans/Stripe)
- Real-time Chat Support
- Advanced Analytics Dashboard
- Mobile App (React Native)
+Payment gateway integration
+Real-time notifications
+Advanced analytics
+Mobile application
 
 Version 1.2 (Q4 2025)
 
- Multi-vendor Support
- Inventory Forecasting
- Advanced Search & Filters
- Social Media Integration
+Multi-vendor marketplace
+Inventory forecasting
+Advanced search filters
+Social media integration
 
 Version 2.0 (2026)
 
- AI-powered Recommendations
- Blockchain Integration
- Advanced Security Features
- Global Expansion Tools
+AI-powered recommendations
+Enhanced security features
+International expansion tools
+Advanced reporting suite
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Support
+For technical support and inquiries:
+
+Email: machzaul17@gmail.com
+Phone: +62 856 9450 8422
+Location: Padang, Indonesia
+Issues: GitHub Issues
+Documentation: Wiki
+
+Support Hours:
+
+Customer Support: 24/7 response
+Development Support: Monday-Friday, 9AM-5PM (WIB)
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
 MIT License
 
 Copyright (c) 2025 MachzaulMart
@@ -506,15 +382,21 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-🙏 Acknowledgments
-Terima kasih kepada semua pihak yang berkontribusi:
+Acknowledgments
+Special thanks to:
 
-🏗️ React Team - Untuk framework JavaScript yang luar biasa
-🎨 Tailwind CSS Team - Untuk utility-first CSS framework
-🐍 Pyramid Community - Untuk web framework Python yang powerful
-🌟 Open Source Community - Untuk semua library dan tools yang digunakan
-👥 Beta Testers - Untuk feedback dan testing
-🎯 Early Adopters - Untuk kepercayaan menggunakan platform kami
+React Team - For the powerful JavaScript framework
+Tailwind CSS Team - For the utility-first CSS framework
+Pyramid Community - For the robust Python web framework
+Open Source Community - For the incredible tools and libraries
+Beta Testers - For valuable feedback and testing
+Early Adopters - For trusting our platform
+
+
+<div align="center">
+  <sub>Built with precision by the Machzaul Harmansyah</sub>
+</div>
+```
 
 ## Screenshot Aplikasi
 
