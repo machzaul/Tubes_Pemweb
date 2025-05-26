@@ -141,7 +141,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
         <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           {/* Modal Header */}
           <div className="flex justify-between items-center p-6 border-b">
-            <h2 className="text-2xl font-bold text-gray-900">Product Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Detail Produk</h2>
             <button
               onClick={() => {
                 onClose();
@@ -212,7 +212,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                 {!isOutOfStock && (
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quantity
+                      Jumlah
                     </label>
                     <div className="flex items-center space-x-3">
                       <button
@@ -255,8 +255,8 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                     }`}
                   >
                     {product.stock === 0 ? 'Out of Stock' : 
-                     availableQuantity === 0 ? 'Maximum in Cart' : 
-                     'Add to Cart'}
+                     availableQuantity === 0 ? 'Sudah penuh' : 
+                     'Masukkan ke Keranjang'}
                   </button>
                   <button
                     onClick={() => {

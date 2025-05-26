@@ -281,10 +281,10 @@ const AddEditProduct = () => {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Dashboard
+            Kembali ke Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
-            {isEdit ? "Edit Product" : "Add New Product"}
+            {isEdit ? "Edit Product" : "Tambahkan Produk Baru"}
           </h1>
         </div>
 
@@ -294,7 +294,7 @@ const AddEditProduct = () => {
             {/* Product Title */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Title *
+                Nama Produk *
               </label>
               <input
                 type="text"
@@ -305,7 +305,7 @@ const AddEditProduct = () => {
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                   errors.title ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
-                placeholder="Enter product title"
+                placeholder="Masukkan nama produk"
                 disabled={loading}
               />
               {errors.title && (
@@ -316,7 +316,7 @@ const AddEditProduct = () => {
             {/* Product Description */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Description *
+                Deskripsi Produk *
               </label>
               <textarea
                 id="description"
@@ -327,7 +327,7 @@ const AddEditProduct = () => {
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                   errors.description ? "border-red-300 bg-red-50" : "border-gray-300"
                 }`}
-                placeholder="Enter product description"
+                placeholder="Masukkan deskripsi produk"
                 disabled={loading}
               />
               {errors.description && (
@@ -360,7 +360,7 @@ const AddEditProduct = () => {
 
               <div>
                 <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
-                  Stock Quantity *
+                  Jumlah Stok *
                 </label>
                 <input
                   type="number"
@@ -384,7 +384,7 @@ const AddEditProduct = () => {
             {/* Product Image */}
             <div>
               <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Image URL *
+                Link Gambar Produk *
               </label>
               <input
                 type="url"
@@ -428,7 +428,7 @@ const AddEditProduct = () => {
                 className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 disabled={loading}
               >
-                Cancel
+                Batalkan
               </button>
               <button
                 type="submit"
@@ -441,7 +441,7 @@ const AddEditProduct = () => {
                     {isEdit ? "Updating..." : "Creating..."}
                   </div>
                 ) : (
-                  isEdit ? "Update Product" : "Create Product"
+                  isEdit ? "Update Product" : "Buat Product"
                 )}
               </button>
             </div>
