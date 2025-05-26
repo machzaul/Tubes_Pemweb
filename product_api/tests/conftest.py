@@ -1,132 +1,201 @@
-import alembic
-import alembic.config
-import alembic.command
-import os
-from pyramid.paster import get_appsettings
-from pyramid.scripting import prepare
-from pyramid.testing import DummyRequest, testConfig
+""" Global pytest configuration and fixtures """
 import pytest
-import transaction
-import webtest
+import os
+import sys
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from pyramid import testing
+from pyramid.testing import DummyRequest
 
-from product_api import main
-from product_api import models
+# Add the project root to Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from product_api.models.meta import Base
+from product_api.models.product import Product
+from product_api.models.customer_info import CustomerInfo
+from product_api.models.order import Order, OrderItem
+from product_api.models.admin import Admin
 
+@pytest.fixture(scope="session")
+def engine():
+    """Create test database engine"""
+    # Use in-memory SQLite for testing
+    return create_engine('sqlite:///:memory:', echo=False)
 
-def pytest_addoption(parser):
-    parser.addoption('--ini', action='store', metavar='INI_FILE')
-
-@pytest.fixture(scope='session')
-def ini_file(request):
-    # potentially grab this path from a pytest option
-    return os.path.abspath(request.config.option.ini or 'testing.ini')
-
-@pytest.fixture(scope='session')
-def app_settings(ini_file):
-    return get_appsettings(ini_file)
-
-@pytest.fixture(scope='session')
-def dbengine(app_settings, ini_file):
-    engine = models.get_engine(app_settings)
-
-    alembic_cfg = alembic.config.Config(ini_file)
-    Base.metadata.drop_all(bind=engine)
-    alembic.command.stamp(alembic_cfg, None, purge=True)
-
-    # run migrations to initialize the database
-    # depending on how we want to initialize the database from scratch
-    # we could alternatively call:
-    # Base.metadata.create_all(bind=engine)
-    # alembic.command.stamp(alembic_cfg, "head")
-    alembic.command.upgrade(alembic_cfg, "head")
-
-    yield engine
-
-    Base.metadata.drop_all(bind=engine)
-    alembic.command.stamp(alembic_cfg, None, purge=True)
-
-@pytest.fixture(scope='session')
-def app(app_settings, dbengine):
-    return main({}, dbengine=dbengine, **app_settings)
+@pytest.fixture(scope="session")
+def tables(engine):
+    """Create all tables for testing"""
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
 
 @pytest.fixture
-def tm():
-    tm = transaction.TransactionManager(explicit=True)
-    tm.begin()
-    tm.doom()
-
-    yield tm
-
-    tm.abort()
-
-@pytest.fixture
-def dbsession(app, tm):
-    session_factory = app.registry['dbsession_factory']
-    return models.get_tm_session(session_factory, tm)
-
-@pytest.fixture
-def testapp(app, tm, dbsession):
-    # override request.dbsession and request.tm with our own
-    # externally-controlled values that are shared across requests but aborted
-    # at the end
-    testapp = webtest.TestApp(app, extra_environ={
-        'HTTP_HOST': 'example.com',
-        'tm.active': True,
-        'tm.manager': tm,
-        'app.dbsession': dbsession,
-    })
-
-    return testapp
+def dbsession(engine, tables):
+    """Create a fresh database session for each test"""
+    connection = engine.connect()
+    transaction = connection.begin()
+    Session = sessionmaker(bind=connection)
+    session = Session()
+    
+    yield session
+    
+    session.close()
+    transaction.rollback()
+    connection.close()
 
 @pytest.fixture
-def app_request(app, tm, dbsession):
-    """
-    A real request.
-
-    This request is almost identical to a real request but it has some
-    drawbacks in tests as it's harder to mock data and is heavier.
-
-    """
-    with prepare(registry=app.registry) as env:
-        request = env['request']
-        request.host = 'example.com'
-
-        # without this, request.dbsession will be joined to the same transaction
-        # manager but it will be using a different sqlalchemy.orm.Session using
-        # a separate database transaction
-        request.dbsession = dbsession
-        request.tm = tm
-
-        yield request
+def config():
+    """Create Pyramid test configuration"""
+    config = testing.setUp()
+    yield config
+    testing.tearDown()
 
 @pytest.fixture
-def dummy_request(tm, dbsession):
-    """
-    A lightweight dummy request.
-
-    This request is ultra-lightweight and should be used only when the request
-    itself is not a large focus in the call-stack.  It is much easier to mock
-    and control side-effects using this object, however:
-
-    - It does not have request extensions applied.
-    - Threadlocals are not properly pushed.
-
-    """
+def dummy_request(dbsession):
+    """Create a dummy request with database session"""
     request = DummyRequest()
-    request.host = 'example.com'
     request.dbsession = dbsession
-    request.tm = tm
+    request.json_body = {}
+    request.headers = {}
+    request.matchdict = {}
+    return request
 
+# Test data factories
+@pytest.fixture
+def sample_product(dbsession):
+    """Create a sample product for testing"""
+    product = Product(
+        title="Sample Product",
+        description="Sample product for testing",
+        price=29.99,
+        stock=10,
+        image="sample.jpg"
+    )
+    dbsession.add(product)
+    dbsession.flush()
+    return product
+
+@pytest.fixture
+def sample_customer(dbsession):
+    """Create a sample customer for testing"""
+    customer = CustomerInfo(
+        full_name="John Doe",
+        email="john.doe@example.com",
+        address="123 Main Street, City, State 12345",
+        phone_number="555-123-4567"
+    )
+    dbsession.add(customer)
+    dbsession.flush()
+    return customer
+
+@pytest.fixture
+def sample_admin(dbsession):
+    """Create a sample admin for testing"""
+    admin = Admin(username="testadmin")
+    admin.set_password("testpassword123")
+    admin.is_active = True
+    dbsession.add(admin)
+    dbsession.flush()
+    return admin
+
+@pytest.fixture
+def sample_order(dbsession, sample_customer, sample_product):
+    """Create a sample order for testing"""
+    order = Order(
+        order_id="ORD-TEST-001",
+        customer_info_id=sample_customer.id,
+        subtotal=29.99,
+        shipping=5.00,
+        total=34.99,
+        status="pending",
+        status_history=[]
+    )
+    dbsession.add(order)
+    dbsession.flush()
+    
+    # Add order item
+    order_item = OrderItem(
+        order_id=order.id,
+        product_id=sample_product.id,
+        quantity=1,
+        price=29.99
+    )
+    dbsession.add(order_item)
+    dbsession.flush()
+    
+    return order
+
+# Utility fixtures
+@pytest.fixture
+def multiple_products(dbsession):
+    """Create multiple products for testing"""
+    products = []
+    for i in range(5):
+        product = Product(
+            title=f"Product {i+1}",
+            description=f"Description for product {i+1}",
+            price=10.00 + (i * 5),
+            stock=10 - i,
+            image=f"product{i+1}.jpg"
+        )
+        products.append(product)
+    
+    dbsession.add_all(products)
+    dbsession.flush()
+    return products
+
+@pytest.fixture
+def jwt_secret():
+    """JWT secret for testing"""
+    return "test-secret-key-for-jwt-tokens"
+
+import pytest
+from pyramid import testing
+from pyramid.testing import DummyRequest
+from webtest import TestApp
+
+@pytest.fixture
+def dummy_request(dbsession):
+    """Create a complete dummy request with all needed attributes"""
+    request = DummyRequest()
+    request.dbsession = dbsession
+    request.json_body = {}
+    request.headers = {}
+    request.matchdict = {}
+    
+    # Tambahkan attributes yang missing
+    request.content_type = 'application/json'
+    request.method = 'GET'
+    request.path = '/'
+    request.url = 'http://localhost/'
+    request.remote_addr = '127.0.0.1'
+    
     return request
 
 @pytest.fixture
-def dummy_config(dummy_request):
-    """
-    A dummy :class:`pyramid.config.Configurator` object.  This allows for
-    mock configuration, including configuration for ``dummy_request``, as well
-    as pushing the appropriate threadlocals.
+def testapp(config, dbsession):
+    """Create WebTest TestApp for functional testing"""
+    from product_api import main
+    
+    # Setup basic config
+    settings = {
+        'sqlalchemy.url': 'sqlite:///:memory:',
+    }
+    
+    app = main({}, **settings)
+    app.registry.dbsession = dbsession
+    
+    return TestApp(app)
 
-    """
-    with testConfig(request=dummy_request) as config:
-        yield config
+@pytest.fixture  
+def app_request(dbsession):
+    """Create app request for view testing"""
+    config = testing.setUp()
+    request = testing.DummyRequest()
+    request.dbsession = dbsession
+    request.json_body = {}
+    request.headers = {}
+    request.matchdict = {}
+    request.content_type = 'application/json'
+    
+    return request
