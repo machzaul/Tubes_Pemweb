@@ -5,12 +5,59 @@ import OrderSuccessAlert from "../components/ui/OrderSuccessAlert";
 import { Alert, AlertTitle, AlertDescription } from "../components/ui/Alert"; // sesuaikan path jika berbeda
 
 
+
 const Checkout = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]); // Products from backend
   const [stockErrors, setStockErrors] = useState([]); // Track stock validation errors
   const [copied, setCopied] = useState(false);
   const [showWarningAlert, setShowWarningAlert] = useState(false);
+  const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+
+  const handleToggleLocation = async () => {
+    const newValue = !useCurrentLocation;
+    setUseCurrentLocation(newValue);
+
+    if (newValue) {
+      if (!navigator.geolocation) {
+        alert("Geolocation tidak didukung di browser ini.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            const address = data.display_name || `${latitude}, ${longitude}`;
+
+            setCustomerInfo(prev => ({
+              ...prev,
+              address
+            }));
+          } catch (error) {
+            console.error("Gagal mendapatkan alamat:", error);
+            alert("Gagal mengambil alamat dari lokasi.");
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          alert("Tidak dapat mengakses lokasi. Pastikan izin diberikan.");
+        }
+      );
+    } else {
+      // Clear alamat jika kembali ke manual
+      setCustomerInfo(prev => ({
+        ...prev,
+        address: ""
+      }));
+    }
+  };
+
 
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
@@ -131,12 +178,12 @@ const Checkout = () => {
     const backendProduct = products.find(p => p.id === productId);
     
     if (!backendProduct) {
-      alert("This product is no longer available.");
+      showWarningAlert("This product is no longer available.");
       return;
     }
     
     if (newQuantity > backendProduct.stock) {
-      alert(`Sorry, only ${backendProduct.stock} items are available in stock.`);
+      showWarningAlert(`Sorry, only ${backendProduct.stock} items are available in stock.`);
       return;
     }
     
@@ -446,7 +493,21 @@ const Checkout = () => {
                   placeholder="123 Main St, City, Country"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
+                  disabled={useCurrentLocation}
                 />
+
+                <div className="mt-2 flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="useLocation"
+                    checked={useCurrentLocation}
+                    onChange={handleToggleLocation}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="useLocation" className="text-sm text-gray-700">
+                    Gunakan lokasi sekarang
+                  </label>
+                </div>
               </div>
               
               <div>

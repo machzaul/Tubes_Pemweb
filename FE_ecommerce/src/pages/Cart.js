@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Rupiah from "../components/Rupiah";
+import AlertContainer from "../components/ui/AlertContainer";
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]); // Admin products for stock validation
   const [stockErrors, setStockErrors] = useState([]); // Track stock validation errors
+  const [alerts, setAlerts] = useState([]); // Alert system
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +27,22 @@ const Cart = () => {
     validateCartStock(cartWithQuantity, storedProducts);
   }, []);
 
+  // Alert system functions
+  const addAlert = (alert) => {
+    const newAlert = {
+      id: Date.now() + Math.random(),
+      variant: 'success',
+      autoClose: true,
+      duration: 3000,
+      ...alert
+    };
+    setAlerts(prev => [...prev, newAlert]);
+  };
+
+  const removeAlert = (id) => {
+    setAlerts(prev => prev.filter(alert => alert.id !== id));
+  };
+
   // Validate cart items against available stock
   const validateCartStock = (cartItems, adminProducts) => {
     const errors = [];
@@ -35,7 +53,7 @@ const Cart = () => {
         errors.push({
           id: cartItem.id,
           title: cartItem.title,
-          message: "Product is no longer available",
+          message: "Produk tidak lagi tersedia",
           type: 'unavailable'
         });
       } else if (cartItem.quantity > adminProduct.stock) {
@@ -44,7 +62,7 @@ const Cart = () => {
           title: cartItem.title,
           requestedQty: cartItem.quantity,
           availableStock: adminProduct.stock,
-          message: `Only ${adminProduct.stock} items available (you have ${cartItem.quantity} in cart)`,
+          message: `Hanya tersedia ${adminProduct.stock} item (Anda memiliki ${cartItem.quantity} di keranjang)`,
           type: 'exceeded'
         });
       }
@@ -87,9 +105,16 @@ const Cart = () => {
     if (updatedCart.length === 0) {
       setStockErrors([]);
     }
+
+    addAlert({
+      variant: 'success',
+      title: 'Berhasil!',
+      message: 'Keranjang telah diperbaiki secara otomatis.'
+    });
   };
 
   const removeFromCart = (index) => {
+    const itemName = cart[index].title;
     const updatedCart = cart.filter((_, i) => i !== index);
     setCart(updatedCart);
     updateLocalStorage(updatedCart);
@@ -98,6 +123,12 @@ const Cart = () => {
     if (updatedCart.length === 0) {
       setStockErrors([]);
     }
+
+    addAlert({
+      variant: 'info',
+      title: 'Item Dihapus',
+      message: `${itemName} telah dihapus dari keranjang.`
+    });
   };
 
   const incrementQuantity = (index) => {
@@ -105,12 +136,20 @@ const Cart = () => {
     const adminProduct = products.find(p => p.id === item.id);
     
     if (!adminProduct) {
-      alert("This product is no longer available.");
+      addAlert({
+        variant: 'error',
+        title: 'Produk Tidak Tersedia',
+        message: 'Produk ini tidak lagi tersedia.'
+      });
       return;
     }
     
     if (item.quantity >= adminProduct.stock) {
-      alert(`Sorry, only ${adminProduct.stock} items are available in stock.`);
+      addAlert({
+        variant: 'warning',
+        title: 'Stok Terbatas',
+        message: `Maaf, hanya tersedia ${adminProduct.stock} item dalam stok.`
+      });
       return;
     }
     
@@ -119,14 +158,29 @@ const Cart = () => {
     );
     setCart(updatedCart);
     updateLocalStorage(updatedCart);
+
+    addAlert({
+      variant: 'success',
+      title: 'Quantity Ditambah',
+      message: `Quantity ${item.title} berhasil ditambah.`
+    });
   };
 
   const decrementQuantity = (index) => {
-    const updatedCart = cart.map((item, i) => 
-      i === index ? { ...item, quantity: Math.max(1, item.quantity - 1) } : item
+    const item = cart[index];
+    const updatedCart = cart.map((cartItem, i) => 
+      i === index ? { ...cartItem, quantity: Math.max(1, cartItem.quantity - 1) } : cartItem
     );
     setCart(updatedCart);
     updateLocalStorage(updatedCart);
+
+    if (item.quantity > 1) {
+      addAlert({
+        variant: 'info',
+        title: 'Quantity Dikurangi',
+        message: `Quantity ${item.title} berhasil dikurangi.`
+      });
+    }
   };
 
   // Direct quantity input handler
@@ -135,7 +189,11 @@ const Cart = () => {
     const adminProduct = products.find(p => p.id === item.id);
     
     if (!adminProduct) {
-      alert("This product is no longer available.");
+      addAlert({
+        variant: 'error',
+        title: 'Produk Tidak Tersedia',
+        message: 'Produk ini tidak lagi tersedia.'
+      });
       return;
     }
     
@@ -143,7 +201,11 @@ const Cart = () => {
     const validQuantity = Math.max(1, Math.min(newQuantity, adminProduct.stock));
     
     if (newQuantity > adminProduct.stock) {
-      alert(`Sorry, only ${adminProduct.stock} items are available in stock.`);
+      addAlert({
+        variant: 'warning',
+        title: 'Stok Terbatas',
+        message: `Maaf, hanya tersedia ${adminProduct.stock} item dalam stok.`
+      });
     }
     
     const updatedCart = cart.map((cartItem, i) => 
@@ -160,6 +222,12 @@ const Cart = () => {
     setStockErrors([]);
     // Trigger custom event for navbar update
     window.dispatchEvent(new Event('cartUpdated'));
+
+    addAlert({
+      variant: 'info',
+      title: 'Keranjang Dikosongkan',
+      message: 'Semua item telah dihapus dari keranjang.'
+    });
   };
 
   // Hitung subtotal dan total
@@ -175,11 +243,14 @@ const Cart = () => {
 
   return (
     <div className="p-10">
+      {/* Alert Container */}
+      <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-purple-500 to-blue-500 text-white p-10 rounded-lg shadow-lg mb-8">
         <div className="md:w-1/2 text-left">
-          <h1 className="text-4xl font-bold mb-4">Your Shopping Cart</h1>
-          <p className="text-lg">Review your selected items before checkout!</p>
+          <h1 className="text-4xl font-bold mb-4">Keranjang Belanja Anda</h1>
+          <p className="text-lg">Tinjau item yang dipilih sebelum checkout!</p>
         </div>
         <div className="md:w-1/2 flex justify-center">
           {cart.length > 0 && (
@@ -194,12 +265,12 @@ const Cart = () => {
       {stockErrors.length > 0 && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-medium text-red-800">Stock Issues Detected</h3>
+            <h3 className="text-lg font-medium text-red-800">Masalah Stok Terdeteksi</h3>
             <button
               onClick={fixCartQuantities}
               className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
             >
-              Fix Cart
+              Perbaiki Keranjang
             </button>
           </div>
           <ul className="space-y-2">
@@ -210,7 +281,7 @@ const Cart = () => {
             ))}
           </ul>
           <p className="text-sm text-red-600 mt-2">
-            Click "Fix Cart" to automatically adjust quantities or remove unavailable items.
+            Klik "Perbaiki Keranjang" untuk menyesuaikan quantity secara otomatis atau menghapus item yang tidak tersedia.
           </p>
         </div>
       )}
@@ -221,13 +292,13 @@ const Cart = () => {
             <svg className="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Keranjang Anda kosong</h2>
+            <p className="text-gray-600 mb-6">Sepertinya Anda belum menambahkan item apapun ke keranjang.</p>
             <button 
               onClick={() => navigate('/products')}
               className="bg-purple-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-purple-600 transition-colors"
             >
-              Start Shopping
+              Mulai Belanja
             </button>
           </div>
         </div>
@@ -239,18 +310,18 @@ const Cart = () => {
               {/* Table Header */}
               <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
                 <div className="grid grid-cols-12 gap-4 text-sm font-semibold text-gray-600 uppercase tracking-wider flex-1">
-                  <div className="col-span-6">PRODUCT</div>
-                  <div className="col-span-2 text-center">PRICE</div>
-                  <div className="col-span-2 text-center">QUANTITY</div>
-                  <div className="col-span-1 text-center">SUBTOTAL</div>
-                  <div className="col-span-1 text-center">ACTIONS</div>
+                  <div className="col-span-5">PRODUK</div>
+                  <div className="col-span-2 text-left pl-2">HARGA</div>
+                  <div className="col-span-2 text-left pl-2">QUANTITY</div>
+                  <div className="col-span-2 text-left pl-2">SUBTOTAL</div>
+                  <div className="col-span-1 text-center">AKSI</div>
                 </div>
                 <button
                   onClick={clearCart}
-                  className="ml-4 px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors"
-                  title="Clear entire cart"
+                  className="ml-4 px-3 py-1 bg-red-700 text-white text-xs rounded-md hover:bg-red-600 transition-colors"
+                  title="Kosongkan seluruh keranjang"
                 >
-                  Clear All
+                  Kosongkan Semua
                 </button>
               </div>
 
@@ -264,7 +335,7 @@ const Cart = () => {
                     <div key={index} className={`px-6 py-6 ${hasStockError ? 'bg-red-50' : ''}`}>
                       <div className="grid grid-cols-12 gap-4 items-center">
                         {/* Product Info */}
-                        <div className="col-span-6 flex items-center space-x-4">
+                        <div className="col-span-5 flex items-center space-x-4">
                           <img 
                             src={item.image} 
                             alt={item.title} 
@@ -276,26 +347,26 @@ const Cart = () => {
                             </h3>
                             {adminProduct && (
                               <p className="text-sm text-gray-500 mt-1">
-                                Stock available: {adminProduct.stock}
+                                Stok tersedia: {adminProduct.stock}
                               </p>
                             )}
                             {hasStockError && (
                               <p className="text-sm text-red-600 mt-1">
-                                ⚠️ Stock issue detected
+                                ⚠️ Masalah stok terdeteksi
                               </p>
                             )}
                           </div>
                         </div>
 
                         {/* Price */}
-                        <div className="col-span-2 text-center">
+                        <div className="col-span-2 text-left pl-2">
                           <span className="text-lg font-semibold text-gray-800">
                             <Rupiah value={item.price}/>
                           </span>
                         </div>
 
                         {/* Quantity Controls */}
-                        <div className="col-span-2 flex items-center justify-center">
+                        <div className="col-span-2 flex items-center pl-2">
                           <div className={`flex items-center border rounded-lg ${hasStockError ? 'border-red-300' : ''}`}>
                             <button
                               onClick={() => decrementQuantity(index)}
@@ -321,7 +392,7 @@ const Cart = () => {
                         </div>
 
                         {/* Subtotal */}
-                        <div className="col-span-1 text-center">
+                        <div className="col-span-2 text-left pl-2">
                           <span className="text-lg font-semibold text-blue-600">
                             <Rupiah value={(item.price * item.quantity).toFixed(0)}/>
                           </span>
@@ -331,8 +402,8 @@ const Cart = () => {
                         <div className="col-span-1 text-center">
                           <button
                             onClick={() => removeFromCart(index)}
-                            className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-md hover:bg-red-50"
-                            title="Remove item"
+                            className="text-red-700 hover:text-red-700 transition-colors p-2 rounded-md hover:bg-red-50"
+                            title="Hapus item"
                           >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -350,17 +421,17 @@ const Cart = () => {
           {/* Order Summary Section */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Order Summary</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-6">Ringkasan Pesanan</h2>
               
               <div className="space-y-4">
                 <div className="flex justify-between text-gray-600">
-                  <span>Subtotal ({cart.length} items)</span>
+                  <span>Subtotal ({cart.length} item)</span>
                   <span className="font-semibold"><Rupiah value={calculateSubtotal()}/></span>
                 </div>
                 
                 <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className="font-semibold text-green-600">Free</span>
+                  <span>Ongkos Kirim</span>
+                  <span className="font-semibold text-green-600">Gratis</span>
                 </div>
                 
                 <div className="border-t pt-4">
@@ -375,13 +446,22 @@ const Cart = () => {
               {stockErrors.length > 0 && (
                 <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-800">
-                    ⚠️ Some items have stock issues. Please fix them before checkout.
+                    ⚠️ Beberapa item memiliki masalah stok. Silakan perbaiki sebelum checkout.
                   </p>
                 </div>
               )}
 
               <button 
-                onClick={() => navigate('/checkout')}
+                onClick={() => {
+                  if (canProceedToCheckout) {
+                    addAlert({
+                      variant: 'success',
+                      title: 'Menuju Checkout',
+                      message: 'Anda akan diarahkan ke halaman checkout.'
+                    });
+                    navigate('/checkout');
+                  }
+                }}
                 disabled={!canProceedToCheckout}
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors mt-6 shadow-lg ${
                   canProceedToCheckout
@@ -389,7 +469,7 @@ const Cart = () => {
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {stockErrors.length > 0 ? 'Fix Stock Issues First' : 'Proceed to Checkout'}
+                {stockErrors.length > 0 ? 'Perbaiki Masalah Stok Terlebih Dahulu' : 'Lanjutkan ke Checkout'}
               </button>
 
               {/* Additional Actions */}
@@ -398,7 +478,7 @@ const Cart = () => {
                   onClick={() => navigate('/products')}
                   className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                 >
-                  Continue Shopping
+                  Lanjutkan Berbelanja
                 </button>
                 
                 {stockErrors.length > 0 && (
@@ -406,15 +486,15 @@ const Cart = () => {
                     onClick={fixCartQuantities}
                     className="w-full bg-red-100 text-red-700 py-2 px-4 rounded-lg font-medium hover:bg-red-200 transition-colors"
                   >
-                    Auto-Fix All Stock Issues
+                    Otomatis Perbaiki Semua Masalah Stok
                   </button>
                 )}
 
                 <button 
                   onClick={clearCart}
-                  className="w-full bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors"
+                  className="w-full bg-red-700 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors"
                 >
-                  Clear Cart
+                  Kosongkan Keranjang
                 </button>
               </div>
             </div>

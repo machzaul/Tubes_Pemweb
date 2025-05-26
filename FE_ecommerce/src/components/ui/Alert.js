@@ -40,7 +40,7 @@ const Alert = ({
 
   const variants = {
     default: 'bg-white border-gray-200 text-gray-800',
-    success: 'bg-green-50 border-green-200 text-green-800',
+    success: 'bg-purple-50 border-purple-200 text-purple-800',
     error: 'bg-red-50 border-red-200 text-red-800',
     warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
     info: 'bg-blue-50 border-blue-200 text-blue-800',
@@ -53,7 +53,7 @@ const Alert = ({
       </svg>
     ),
     success: (
-      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),

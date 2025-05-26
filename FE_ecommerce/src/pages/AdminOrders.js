@@ -498,7 +498,21 @@ const AdminOrderManagement = () => {
                                 <div><span className="font-medium">Nama Lengkap:</span> {order.customerInfo?.fullName || 'N/A'}</div>
                                 <div><span className="font-medium">Email:</span> {order.customerInfo?.email || 'N/A'}</div>
                                 <div><span className="font-medium">Telepon:</span> {order.customerInfo?.phoneNumber || 'N/A'}</div>
-                                <div><span className="font-medium">Alamat:</span> {order.customerInfo?.address || 'N/A'}</div>
+                                <div>
+                                  <span className="font-medium">Alamat:</span>{" "}
+                                  {order.customerInfo?.address ? (
+                                    <a
+                                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.customerInfo.address)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {order.customerInfo.address}
+                                    </a>
+                                  ) : (
+                                    'N/A'
+                                  )}
+                                </div>
                               </div>
                             </div>
 

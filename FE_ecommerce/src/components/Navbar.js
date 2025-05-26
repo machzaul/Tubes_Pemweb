@@ -37,6 +37,9 @@ const Navbar = () => {
       </Link>
       
       <div className="flex items-center space-x-6">
+        <Link to="/" className="hover:text-purple-200 transition-colors">
+          Home
+        </Link>
         <Link to="/products" className="hover:text-purple-200 transition-colors">
           Products
         </Link>
@@ -58,7 +61,7 @@ const Navbar = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.9 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293A1 1 0 005 16h12M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6.5" />
             </svg>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+              <span className="absolute -top-2 -right-2 bg-red-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                 {cartCount > 9 ? '9+' : cartCount}
               </span>
             )}
