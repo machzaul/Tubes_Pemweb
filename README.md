@@ -24,7 +24,7 @@ MachzaulMart adalah platform e-commerce modern yang dibangun dengan teknologi te
 - ✅ **Interface Responsif** - Tampilan yang optimal di semua perangkat
 - ✅ **Pelacakan Pesanan** - Fitur tracking untuk pelanggan
 - ✅ **Multi-kategori Produk** - Mendukung berbagai jenis produk
-- ✅ **Notifikasi Real-time** - Update status pesanan secara langsung
+- ✅ **Status Real time** - Update status pesanan secara langsung
 
 ## 🛠️ Tech Stack
 
@@ -69,6 +69,32 @@ Pastikan sistem Anda telah terinstall:
 | **Frontend** | React + Tailwind CSS | User Interface |
 | **Database** | SQLite/PostgreSQL | Data Storage |
 | **Authentication** | JWT | Secure User Sessions |
+
+## Dependensi Utama
+
+Seluruh dependensi proyek didefinisikan di dalam file [`requirements.txt`](./requirements.txt). Berikut ini beberapa dependensi utama:
+
+### Web Framework & Template Engine
+- **`pyramid`** – Framework utama aplikasi.
+- **`pyramid_jinja2`**, **`pyramid-mako`** – Engine template untuk rendering halaman (jika diperlukan).
+
+### Database & ORM
+- **`SQLAlchemy`** – ORM (Object Relational Mapper) untuk mengelola data dan query.
+- **`psycopg2-binary`** – Driver PostgreSQL.
+- **`zope.sqlalchemy`** – Integrasi SQLAlchemy dengan Pyramid transaction management.
+- **`alembic`** – Untuk mengatur dan menjalankan migrasi skema database.
+
+### Keamanan & Autentikasi
+- **`PyJWT`** – JSON Web Token untuk autentikasi berbasis token.
+- **`Werkzeug`** – Toolkit WSGI yang juga menyediakan utilitas keamanan (seperti password hashing).
+
+### Alat Tambahan
+- **`cookiecutter`** – Untuk membuat scaffold/template proyek dengan struktur yang terstandarisasi.
+
+### WSGI Server
+- **`waitress`** – WSGI server production-ready yang mudah dikonfigurasi dan cepat.
+
+---
 
 ## Quick Start
 
