@@ -329,103 +329,124 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 ```
-Contributing
-We welcome contributions from the community. Please follow these steps:
+<h2 align="center"> Contributing</h2>
 
-Fork the repository
-Create a feature branch: git checkout -b feature/new-feature
-Make your changes and commit: git commit -m "Add new feature"
-Push to your fork: git push origin feature/new-feature
-Submit a pull request
+Kami sangat menghargai kontribusi dari komunitas. Ikuti langkah-langkah berikut untuk berkontribusi:
 
-Development Guidelines
+<ol>
+  <li>Fork repositori ini.</li>
+  <li>Buat branch fitur baru:
+    <pre><code>git checkout -b feature/nama-fitur</code></pre>
+  </li>
+  <li>Lakukan perubahan dan commit:
+    <pre><code>git commit -m "Add nama fitur"</code></pre>
+  </li>
+  <li>Push ke fork Anda:
+    <pre><code>git push origin feature/nama-fitur</code></pre>
+  </li>
+  <li>Buat pull request ke branch <code>main</code> di repositori utama.</li>
+</ol>
 
-Write clear, self-documenting code
-Include tests for new features
-Update documentation as needed
-Follow existing code style and conventions
+---
 
-Troubleshooting
-Common Issues
-Backend Issues:
+<h2> Development Guidelines</h2>
 
-ModuleNotFoundError: Run python setup.py develop in backend directory
-Database errors: Reinitialize with initialize_db development.ini
-Port conflicts: Use different port with --port=6544
+<ul>
+  <li>✅ Tulis kode yang jelas dan mudah dipahami.</li>
+  <li>✅ Sertakan <strong>unit test</strong> untuk fitur baru.</li>
+  <li>✅ Perbarui dokumentasi jika diperlukan.</li>
+  <li>✅ Ikuti gaya dan konvensi penulisan kode yang sudah ada.</li>
+</ul>
 
-Frontend Issues:
+---
 
-npm install fails: Clear cache with npm cache clean --force
-Tailwind not working: Verify tailwind.config.js configuration
-CORS errors: Check backend CORS settings
+<h2> Troubleshooting</h2>
 
-Debug Mode
-Enable debug logging by setting environment variables:
-bash# Backend
-export DEBUG=true
+<h3> Masalah Umum</h3>
 
-# Frontend
-REACT_APP_LOG_LEVEL=debug npm start
-Roadmap
-Version 1.1 (Q3 2025)
+<strong>🔹 Backend</strong>
 
-Payment gateway integration
-Real-time notifications
-Advanced analytics
-Mobile application
+- <strong>ModuleNotFoundError</strong>  
+  Jalankan:
+  <pre><code>python setup.py develop</code></pre>
 
-Version 1.2 (Q4 2025)
+- <strong>Kesalahan database</strong>  
+  Inisialisasi ulang dengan:
+  <pre><code>initialize_db development.ini</code></pre>
 
-Multi-vendor marketplace
-Inventory forecasting
-Advanced search filters
-Social media integration
+- <strong>Konflik port</strong>  
+  Jalankan dengan port lain:
+  <pre><code>pserve development.ini --port=6544</code></pre>
 
-Version 2.0 (2026)
+<strong>🔹 Frontend</strong>
 
-AI-powered recommendations
-Enhanced security features
-International expansion tools
-Advanced reporting suite
+- <strong>npm install gagal</strong>  
+  Bersihkan cache:
+  <pre><code>npm cache clean --force</code></pre>
 
-Support
-For technical support and inquiries:
+- <strong>Tailwind tidak berfungsi</strong>  
+  Periksa file <code>tailwind.config.js</code>.
 
-Email: machzaul17@gmail.com
-Phone: +62 856 9450 8422
-Location: Padang, Indonesia
-Issues: GitHub Issues
-Documentation: Wiki
+- <strong>CORS error</strong>  
+  Pastikan backend memiliki konfigurasi CORS yang benar.
 
-Support Hours:
+<h3> Debug Mode</h3>
 
-Customer Support: 24/7 response
-Development Support: Monday-Friday, 9AM-5PM (WIB)
+<strong>Backend:</strong>
+<pre><code>export DEBUG=true</code></pre>
 
-License
-This project is licensed under the MIT License. See the LICENSE file for details.
-MIT License
+<strong>Frontend:</strong>
+<pre><code>REACT_APP_LOG_LEVEL=debug npm start</code></pre>
 
-Copyright (c) 2025 MachzaulMart
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+<h2>🗺️ Roadmap</h2>
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-Acknowledgments
-Special thanks to:
+<table>
+  <thead>
+    <tr>
+      <th>Versi</th>
+      <th>Fitur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1.1 (Q3 2025)</strong></td>
+      <td>
+        🔌 Integrasi payment gateway<br/>
+        🔔 Notifikasi real-time<br/>
+        📊 Analitik lanjutan<br/>
+        📱 Aplikasi mobile
+      </td>
+    </tr>
+    <tr>
+      <td><strong>1.2 (Q4 2025)</strong></td>
+      <td>
+        🛍️ Marketplace multi-vendor<br/>
+        📦 Prediksi stok & inventory<br/>
+        🔎 Filter pencarian lanjutan<br/>
+        📣 Integrasi media sosial
+      </td>
+    </tr>
+    <tr>
+      <td><strong>2.0 (2026)</strong></td>
+      <td>
+        🤖 Rekomendasi berbasis AI<br/>
+        🔐 Fitur keamanan tingkat lanjut<br/>
+        🌍 Ekspansi internasional<br/>
+        📈 Laporan bisnis canggih
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-React Team - For the powerful JavaScript framework
-Tailwind CSS Team - For the utility-first CSS framework
-Pyramid Community - For the robust Python web framework
-Open Source Community - For the incredible tools and libraries
-Beta Testers - For valuable feedback and testing
-Early Adopters - For trusting our platform
+---
+
+<h2>📞 Support</h2>
+
+📧 <strong>Email:</strong> <a href="mailto:machzaul17@gmail.com">machzaul17@gmail.com</a><br/>
+📱 <strong>Telepon:</strong> +62 856 9450 8422<br/>
+📍 <strong>Lokasi:</strong> Padang, Indonesia<br/>
 
 
 ## Screenshot Aplikasi
@@ -447,11 +468,11 @@ Early Adopters - For trusting our platform
 | ![Lacak](screenshoot/halaman_lacak.png) |
 
 
-## 📦 Unit Testing
+##  Unit Testing
 
 Sebagai bagian dari proses pengembangan, kami telah melakukan **unit testing** untuk memastikan bahwa setiap fungsi berjalan sesuai dengan yang diharapkan.
 
-### ✅ Hasil Unit Testing
+###  Hasil Unit Testing
 
 Berikut ini adalah hasil dari unit testing yang telah dilakukan:
 
