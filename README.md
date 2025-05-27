@@ -25,26 +25,66 @@ MachzaulMart adalah platform e-commerce modern yang dibangun dengan teknologi te
 - ✅ **Multi-kategori Produk** - Mendukung berbagai jenis produk
 - ✅ **Status Real time** - Update status pesanan secara langsung
 
-## 🛠️ Tech Stack
+<h3> Frontend Stack</h3>
 
-### Frontend
-├── React.js 18+           # UI Library
-├── Tailwind CSS 3+        # Styling Framework
-├── React Router v6        # Client-side Routing
-├── Axios                  # HTTP Client
-├── React Hooks            # State Management
-└── Responsive Design      # Mobile-first Approach
+<table>
+  <tr>
+    <td>⚛️ <strong>React.js</strong> 18+</td>
+    <td>UI Library untuk membangun antarmuka interaktif</td>
+  </tr>
+  <tr>
+    <td>🎨 <strong>Tailwind CSS</strong> 3+</td>
+    <td>Framework styling berbasis utility-first</td>
+  </tr>
+  <tr>
+    <td>🧭 <strong>React Router</strong> v6</td>
+    <td>Routing client-side untuk SPA</td>
+  </tr>
+  <tr>
+    <td>📡 <strong>Axios</strong></td>
+    <td>HTTP client untuk komunikasi API</td>
+  </tr>
+  <tr>
+    <td>🪝 <strong>React Hooks</strong></td>
+    <td>Manajemen state dan efek di komponen</td>
+  </tr>
+  <tr>
+    <td>📱 <strong>Responsive Design</strong></td>
+    <td>Pendekatan mobile-first untuk semua resolusi</td>
+  </tr>
+</table>
 
+---
 
+<h3> Backend Stack</h3>
 
+<table>
+  <tr>
+    <td>🐍 <strong>Python</strong> 3.8+</td>
+    <td>Bahasa pemrograman utama</td>
+  </tr>
+  <tr>
+    <td>🏛️ <strong>Pyramid</strong></td>
+    <td>Web framework ringan & fleksibel</td>
+  </tr>
+  <tr>
+    <td>🧬 <strong>SQLAlchemy</strong></td>
+    <td>ORM untuk koneksi dan manajemen database</td>
+  </tr>
+  <tr>
+    <td>🚀 <strong>Waitress</strong></td>
+    <td>WSGI production server</td>
+  </tr>
+  <tr>
+    <td>📦 <strong>Alembic</strong></td>
+    <td>Tool migrasi database berbasis SQLAlchemy</td>
+  </tr>
+  <tr>
+    <td>🔐 <strong>JWT Authentication</strong></td>
+    <td>Sistem autentikasi berbasis token</td>
+  </tr>
+</table>
 
-### Backend
-├── Python 3.8+            # Programming Language
-├── Pyramid Framework      # Web Framework
-├── SQLAlchemy            # ORM
-├── Waitress              # WSGI Server
-├── Alembic               # Database Migration
-└── JWT Authentication    # Security
 
 
 
