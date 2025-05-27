@@ -6,7 +6,6 @@
 <p align="center">
   <em>Tinggal Klik, Langsung Datang!</em>
 </p>
----
 
 ![MachzaulMart](https://img.shields.io/badge/MachzaulMart-E--commerce-8B5CF6?style=for-the-badge&logo=shopping-cart)
 ![React](https://img.shields.io/badge/React-18.0+-61DAFB?style=for-the-badge&logo=react)
