@@ -54,8 +54,6 @@ MachzaulMart adalah platform e-commerce modern yang dibangun dengan teknologi te
   </tr>
 </table>
 
----
-
 <h3> Backend Stack</h3>
 
 <table>
